@@ -37,7 +37,7 @@ mapfile -t LIBS < <(find "$VORTEX/hw/rtl/libs" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t CACHE < <(find "$VORTEX/hw/rtl/cache" -maxdepth 1 -name '*.sv' | sort)
 
 if [ "${VERILATOR_DOCKER:-0}" = "1" ]; then
-  VERILATOR_CMD=(docker run --rm -v "$ROOT:$ROOT" -w "$OUT" --user "$(id -u):$(id -g)" verilator/verilator:5.052)
+  VERILATOR_CMD=(docker run --rm -v "$ROOT:$ROOT" -w "$OUT" --user "$(id -u):$(id -g)" verilator/verilator:latest)
 else
   VERILATOR_CMD=(verilator)
 fi
