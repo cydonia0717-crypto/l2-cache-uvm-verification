@@ -13,6 +13,8 @@ class l2_dirty_eviction_test extends l2_base_test;
   function new(string name, uvm_component parent); super.new(name,parent); endfunction
   task run_phase(uvm_phase phase);
     l2_dirty_eviction_seq s=l2_dirty_eviction_seq::type_id::create("s");
-    phase.raise_objection(this); s.start(env.core0.sqr); wait_cycles(450); phase.drop_objection(this);
+    phase.raise_objection(this); s.start(env.core0.sqr); wait_cycles(450);
+    if (env.sb.mem_writebacks==0) `uvm_error("DIRTY_EVICT","expected at least one dirty writeback")
+    phase.drop_objection(this);
   endtask
 endclass
