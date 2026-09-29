@@ -17,6 +17,7 @@ tests=(
   "l2_global_mshr_pressure_test:19"
   "l2_writeback_backpressure_test:20"
   "l2_refill_writeback_overlap_test:21"
+  "l2_flush_test:22"
 )
 
 for spec in "${tests[@]}"; do
