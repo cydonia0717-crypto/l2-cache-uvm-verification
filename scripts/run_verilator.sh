@@ -8,7 +8,11 @@ TEST=${TEST:-l2_smoke_test}
 SEED=${SEED:-1}
 OUT=${OUT:-"$ROOT/out/verilator/$TEST.$SEED"}
 
-command -v verilator >/dev/null || { echo "verilator not found; run scripts/bootstrap_oss.sh"; exit 2; }
+if [ "${VERILATOR_DOCKER:-0}" != "1" ]; then
+  command -v verilator >/dev/null || { echo "verilator not found; run scripts/bootstrap_oss.sh"; exit 2; }
+else
+  command -v docker >/dev/null || { echo "docker not found"; exit 2; }
+fi
 [ -f "$UVM_HOME/uvm_pkg.sv" ] || { echo "UVM_HOME invalid: $UVM_HOME"; exit 2; }
 [ -d "$VORTEX/hw/rtl/cache" ] || { echo "Vortex source missing; run scripts/bootstrap_oss.sh"; exit 2; }
 [ -f "$VBUILD/hw/VX_config.vh" ] || { echo "Vortex generated headers missing; run scripts/bootstrap_oss.sh"; exit 2; }
@@ -32,10 +36,16 @@ mapfile -t MEM < <(find "$VORTEX/hw/rtl/mem" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t LIBS < <(find "$VORTEX/hw/rtl/libs" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t CACHE < <(find "$VORTEX/hw/rtl/cache" -maxdepth 1 -name '*.sv' | sort)
 
-verilator --binary --timing --assert --coverage -j "$(nproc)" \
+if [ "${VERILATOR_DOCKER:-0}" = "1" ]; then
+  VERILATOR_CMD=(docker run --rm -v "$ROOT:$ROOT" -w "$OUT" --user "$(id -u):$(id -g)" verilator/verilator:latest)
+else
+  VERILATOR_CMD=(verilator)
+fi
+
+"${VERILATOR_CMD[@]}" --binary --timing --assert --coverage -j "$(nproc)" \
   -Wno-fatal -Wno-lint -Wno-style -Wno-COVERIGN -Wno-MULTITOP \
   --top-module tb_top --Mdir obj_dir -o simv \
-  +define+NDEBUG +define+UVM_NO_DPI \
+  +define+NDEBUG +define+UVM_NO_DPI +define+VX_CFG_XLEN=64 +define+VX_CFG_XLEN_64 \
   "${INC[@]}" \
   "$UVM_HOME/uvm_pkg.sv" \
   "$VORTEX/hw/rtl/VX_gpu_pkg.sv" \

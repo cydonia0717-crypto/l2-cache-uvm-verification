@@ -31,11 +31,13 @@ package l2_uvm_pkg;
   `include "agents/core/l2_core_driver.sv"
   `include "agents/core/l2_core_monitor.sv"
   `include "agents/core/l2_core_agent.sv"
+
   `include "agents/mem/l2_mem_item.sv"
   `include "agents/mem/l2_mem_cfg.sv"
   `include "agents/mem/l2_mem_responder.sv"
   `include "agents/mem/l2_mem_monitor.sv"
   `include "agents/mem/l2_mem_agent.sv"
+
   `include "scoreboard/l2_scoreboard.sv"
   `include "coverage/l2_coverage.sv"
   `include "env/l2_env.sv"
@@ -49,5 +51,7 @@ package l2_uvm_pkg;
   `include "tests/l2_ooo_refill_test.sv"
   `include "tests/l2_same_line_merge_test.sv"
   `include "tests/l2_dirty_eviction_test.sv"
+  `include "tests/l2_clean_eviction_test.sv"
+  `include "tests/l2_bank_hotspot_test.sv"
   `include "tests/l2_random_test.sv"
 endpackage
