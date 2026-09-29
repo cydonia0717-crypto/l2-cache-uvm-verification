@@ -1,0 +1,15 @@
+csrc/
+simv*
+*.daidir/
+*.vpd
+*.vcd
+*.fsdb
+*.log
+*.key
+urgReport/
+coverage/
+regression_out/
+third_party/vortex/
+third_party/vortex_build/
+__pycache__/
+*.pyc
