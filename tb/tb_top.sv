@@ -23,6 +23,7 @@ module tb_top;
   wire core_req_valid [NUM_REQS];
   wire core_req_ready [NUM_REQS];
   wire core_req_rw [NUM_REQS];
+  wire core_req_flush [NUM_REQS];
   wire [ADDR_W-1:0] core_req_addr [NUM_REQS];
   wire [DATA_W-1:0] core_req_data [NUM_REQS];
   wire [7:0] core_req_byteen [NUM_REQS];
@@ -47,6 +48,7 @@ module tb_top;
   assign core0_if.reset=reset; assign core1_if.reset=reset; assign mem_if.reset=reset;
 
   assign core_req_valid[0]=core0_if.req_valid; assign core_req_rw[0]=core0_if.req_rw;
+  assign core_req_flush[0]=core0_if.req_flush;
   assign core_req_addr[0]=core0_if.req_addr; assign core_req_data[0]=core0_if.req_data;
   assign core_req_byteen[0]=core0_if.req_byteen; assign core_req_tag[0]=core0_if.req_tag;
   assign core0_if.req_ready=core_req_ready[0]; assign core0_if.rsp_valid=core_rsp_valid[0];
@@ -54,6 +56,7 @@ module tb_top;
   assign core_rsp_ready[0]=core0_if.rsp_ready;
 
   assign core_req_valid[1]=core1_if.req_valid; assign core_req_rw[1]=core1_if.req_rw;
+  assign core_req_flush[1]=core1_if.req_flush;
   assign core_req_addr[1]=core1_if.req_addr; assign core_req_data[1]=core1_if.req_data;
   assign core_req_byteen[1]=core1_if.req_byteen; assign core_req_tag[1]=core1_if.req_tag;
   assign core1_if.req_ready=core_req_ready[1]; assign core1_if.rsp_valid=core_rsp_valid[1];
