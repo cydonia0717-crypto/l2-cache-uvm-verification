@@ -25,19 +25,6 @@ mapfile -t MEM < <(find "$VORTEX/hw/rtl/mem" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t LIBS < <(find "$VORTEX/hw/rtl/libs" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t CACHE < <(find "$VORTEX/hw/rtl/cache" -maxdepth 1 -name '*.sv' | sort)
 
-vcs -full64 -sverilog -ntb_opts uvm-1.2 -timescale=1ns/1ps \
-  +define+NDEBUG +define+PERF_ENABLE \
-  -debug_access+all -kdb -lca \
-  -cm line+cond+fsm+tgl+branch \
-  "${INC[@]}" \
-  "$VORTEX/hw/rtl/VX_gpu_pkg.sv" \
-  "${IFS[@]}" "${MEM[@]}" "${LIBS[@]}" "${CACHE[@]}" \
-  "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv" \
-  "$ROOT/rtl/l2_cache_dut_wrapper.sv" \
-  "$ROOT/tb/assertions/l2_assertions.sv" \
-  "$ROOT/tb/l2_uvm_pkg.sv" "$ROOT/tb/tb_top.sv" \
-  -top tb_top -o simv
+vcs -full64 -sverilog -ntb_opts uvm-1.2 -timescale=1ns/1ps   +define+NDEBUG +define+PERF_ENABLE +define+VX_CFG_XLEN=64 +define+VX_CFG_XLEN_64   -debug_access+all -kdb -lca   -cm line+cond+fsm+tgl+branch   "${INC[@]}"   "$VORTEX/hw/rtl/VX_gpu_pkg.sv"   "${IFS[@]}" "${MEM[@]}" "${LIBS[@]}" "${CACHE[@]}"   "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv"   "$ROOT/rtl/l2_cache_dut_wrapper.sv"   "$ROOT/tb/assertions/l2_assertions.sv"   "$ROOT/tb/l2_uvm_pkg.sv" "$ROOT/tb/tb_top.sv"   -top tb_top -o simv
 
-./simv +UVM_TESTNAME="$TEST" +ntb_random_seed="$SEED" \
-  -cm line+cond+fsm+tgl+branch -cm_name "$TEST.$SEED" \
-  -l "${TEST}.${SEED}.log"
+./simv +UVM_TESTNAME="$TEST" +ntb_random_seed="$SEED"   -cm line+cond+fsm+tgl+branch -cm_name "$TEST.$SEED"   -l "${TEST}.${SEED}.log"
