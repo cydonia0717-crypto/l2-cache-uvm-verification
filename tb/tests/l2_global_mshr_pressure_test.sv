@@ -15,8 +15,10 @@ class l2_global_mshr_pressure_test extends l2_base_test;
     wait_cycles(900);
     if (env.cov.max_outstanding_refills != 32)
       `uvm_error("GLOBAL_MSHR",$sformatf("expected aggregate 32 outstanding refills, saw %0d",env.cov.max_outstanding_refills))
+    // Stall counter excludes the one-time post-reset cache initialization, so
+    // this is runtime resource pressure after at least one request completed.
     if (env.cov.core_req_stall_count==0)
-      `uvm_error("GLOBAL_MSHR","33rd miss did not observe upstream resource backpressure")
+      `uvm_error("GLOBAL_MSHR","33rd miss did not observe runtime resource backpressure")
     if (env.sb.checks != 33)
       `uvm_error("GLOBAL_MSHR",$sformatf("expected 33 completed reads, got %0d",env.sb.checks))
     phase.drop_objection(this);
