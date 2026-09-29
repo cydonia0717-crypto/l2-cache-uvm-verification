@@ -5,6 +5,10 @@ on:
     branches: [ main, master ]
   pull_request:
 
+concurrency:
+  group: oss-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verilator-uvm:
     runs-on: ubuntu-24.04
@@ -12,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Bootstrap UVM/Vortex
-        run: SKIP_VERILATOR_BUILD=1 bash scripts/bootstrap_oss.sh
+        run: SKIP_APT=1 SKIP_VERILATOR_BUILD=1 bash scripts/bootstrap_oss.sh
       - name: Static project checks
         run: python3 scripts/check_project.py
       - name: Smoke
