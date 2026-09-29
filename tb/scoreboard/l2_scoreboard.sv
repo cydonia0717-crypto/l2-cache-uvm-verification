@@ -6,6 +6,7 @@ class l2_scoreboard extends uvm_component;
   byte unsigned arch_mem[longint unsigned];
   bit [L2_DATA_W-1:0] exp_read[longint unsigned];
   int unsigned checks, errors;
+  int unsigned mem_refill_reqs, mem_writebacks;
 
   function new(string name, uvm_component parent);
     super.new(name,parent); core_imp=new("core_imp",this); mem_imp=new("mem_imp",this);
@@ -55,11 +56,14 @@ class l2_scoreboard extends uvm_component;
   endfunction
 
   function void write_mem(l2_mem_obs o);
+    if (o.kind==MEM_REQ && !o.rw) mem_refill_reqs++;
     if (o.kind==MEM_REQ && o.rw) begin
+      mem_writebacks++;
       for (int i=0;i<L2_LINE_BYTES;i++) begin
         if (o.byteen[i] && o.data[i*8 +: 8] !== get_byte(o.addr+i)) begin
           errors++;
-          `uvm_error("SB",$sformatf("writeback mismatch addr=0x%0h byte=%0d exp=%02x act=%02x",o.addr,i,get_byte(o.addr+i),o.data[i*8 +: 8]))
+          `uvm_error("SB",$sformatf("writeback mismatch addr=0x%0h byte=%0d exp=%02x act=%02x",
+                    o.addr,i,get_byte(o.addr+i),o.data[i*8 +: 8]))
         end
       end
     end
@@ -71,6 +75,6 @@ class l2_scoreboard extends uvm_component;
   endfunction
 
   function void report_phase(uvm_phase phase);
-    `uvm_info("SB",$sformatf("data checks=%0d scoreboard_errors=%0d",checks,errors),UVM_LOW)
+    `uvm_info("SB",$sformatf("data_checks=%0d errors=%0d refill_reqs=%0d writebacks=%0d",checks,errors,mem_refill_reqs,mem_writebacks),UVM_LOW)
   endfunction
 endclass
