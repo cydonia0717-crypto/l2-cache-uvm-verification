@@ -5,7 +5,8 @@ class l2_scoreboard extends uvm_component;
 
   byte unsigned arch_mem[longint unsigned];
   bit [L2_DATA_W-1:0] exp_read[longint unsigned];
-  int unsigned checks, errors;
+  bit exp_flush[longint unsigned];
+  int unsigned checks, errors, flush_responses;
   int unsigned mem_refill_reqs, mem_writebacks;
 
   function new(string name, uvm_component parent);
@@ -31,7 +32,9 @@ class l2_scoreboard extends uvm_component;
     longint unsigned k;
     if (o.kind==CORE_REQ) begin
       k=key(o.port_id,o.tag);
-      if (o.rw) begin
+      if (o.flush) begin
+        exp_flush[k]=1'b1;
+      end else if (o.rw) begin
         for (int i=0;i<L2_STRB_W;i++) if (o.byteen[i]) arch_mem[o.addr+i]=o.data[i*8 +: 8];
       end else begin
         if (exp_read.exists(k)) begin
@@ -41,16 +44,22 @@ class l2_scoreboard extends uvm_component;
         exp_read[k]=get_word(o.addr);
       end
     end else if (o.kind==CORE_RSP) begin
-      k=key(o.port_id,o.tag); checks++;
-      if (!exp_read.exists(k)) begin
-        errors++;
-        `uvm_error("SB",$sformatf("unexpected response port=%0d tag=0x%0h data=0x%0h",o.port_id,o.tag,o.data))
+      k=key(o.port_id,o.tag);
+      if (exp_flush.exists(k)) begin
+        flush_responses++;
+        exp_flush.delete(k);
       end else begin
-        if (o.data !== exp_read[k]) begin
+        checks++;
+        if (!exp_read.exists(k)) begin
           errors++;
-          `uvm_error("SB",$sformatf("read mismatch p%0d tag=0x%0h exp=0x%0h act=0x%0h",o.port_id,o.tag,exp_read[k],o.data))
+          `uvm_error("SB",$sformatf("unexpected response port=%0d tag=0x%0h data=0x%0h",o.port_id,o.tag,o.data))
+        end else begin
+          if (o.data !== exp_read[k]) begin
+            errors++;
+            `uvm_error("SB",$sformatf("read mismatch p%0d tag=0x%0h exp=0x%0h act=0x%0h",o.port_id,o.tag,exp_read[k],o.data))
+          end
+          exp_read.delete(k);
         end
-        exp_read.delete(k);
       end
     end
   endfunction
@@ -72,9 +81,11 @@ class l2_scoreboard extends uvm_component;
   function void check_phase(uvm_phase phase);
     if (exp_read.num()!=0)
       `uvm_error("SB",$sformatf("%0d core read responses still outstanding",exp_read.num()))
+    if (exp_flush.num()!=0)
+      `uvm_error("SB",$sformatf("%0d flush responses still outstanding",exp_flush.num()))
   endfunction
 
   function void report_phase(uvm_phase phase);
-    `uvm_info("SB",$sformatf("data_checks=%0d errors=%0d refill_reqs=%0d writebacks=%0d",checks,errors,mem_refill_reqs,mem_writebacks),UVM_LOW)
+    `uvm_info("SB",$sformatf("data_checks=%0d errors=%0d refill_reqs=%0d writebacks=%0d flush_rsp=%0d",checks,errors,mem_refill_reqs,mem_writebacks,flush_responses),UVM_LOW)
   endfunction
 endclass
