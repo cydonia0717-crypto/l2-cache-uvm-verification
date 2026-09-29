@@ -72,7 +72,7 @@ printf '\nOpen-source simulation stack ready.\n'
 if [ "${SKIP_VERILATOR_BUILD:-0}" != "1" ]; then
   printf '  Verilator: %s\n' "$($VERILATOR_PREFIX/bin/verilator --version)"
 else
-  printf '  Verilator: Docker image verilator/verilator:5.052\n'
+  printf '  Verilator: Docker image verilator/verilator:latest\n'
 fi
 printf '  UVM:       %s @ %s\n' "$UVM" "$UVM_COMMIT"
 printf '  Vortex:    %s @ %s\n' "$VORTEX" "$VORTEX_COMMIT"
