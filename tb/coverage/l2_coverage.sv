@@ -17,11 +17,12 @@ class l2_coverage extends uvm_component;
   longint unsigned read_line_by_key[longint unsigned];
   int unsigned line_pending[longint unsigned];
 
-  covergroup core_cg with function sample(int kind, int port, bit rw, longint unsigned addr, bit same_line_pending);
+  covergroup core_cg with function sample(int kind, int port, bit rw, bit flush, longint unsigned addr, bit same_line_pending);
     option.per_instance=1;
     cp_kind: coverpoint kind { bins req={CORE_REQ}; bins req_stall={CORE_REQ_STALL}; bins rsp={CORE_RSP}; bins rsp_stall={CORE_RSP_STALL}; }
     cp_port: coverpoint port { bins p0={0}; bins p1={1}; }
-    cp_rw: coverpoint rw iff (kind==CORE_REQ) { bins rd={0}; bins wr={1}; }
+    cp_rw: coverpoint rw iff (kind==CORE_REQ && !flush) { bins rd={0}; bins wr={1}; }
+    cp_flush: coverpoint flush iff (kind==CORE_REQ) { bins normal={0}; bins flush_req={1}; }
     cp_offset: coverpoint addr[5:0] iff(kind==CORE_REQ) { bins first={0}; bins middle={[8:48]}; bins last={56}; }
     cp_set_slice: coverpoint addr[15:12] iff(kind==CORE_REQ) { bins all[]={[0:15]}; }
     cp_same_line_pending: coverpoint same_line_pending iff(kind==CORE_REQ && !rw) { bins no={0}; bins yes={1}; }
@@ -77,7 +78,7 @@ class l2_coverage extends uvm_component;
     if (o.kind==CORE_REQ) core_traffic_started[o.port_id]=1'b1;
     if (o.kind==CORE_REQ_STALL && core_traffic_started[o.port_id]) core_req_stall_count++;
     if (o.kind==CORE_RSP_STALL) core_rsp_stall_count++;
-    core_cg.sample(o.kind,o.port_id,o.rw,o.addr,same_line);
+    core_cg.sample(o.kind,o.port_id,o.rw,o.flush,o.addr,same_line);
   endfunction
 
   function void write_mem(l2_mem_obs o);
