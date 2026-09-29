@@ -2,7 +2,7 @@ module l2_core_assertions(l2_core_if vif);
   property p_req_hold;
     @(posedge vif.clk) disable iff(vif.reset)
       vif.req_valid && !vif.req_ready |=> vif.req_valid &&
-      $stable({vif.req_rw,vif.req_addr,vif.req_data,vif.req_byteen,vif.req_tag});
+      $stable({vif.req_rw,vif.req_flush,vif.req_addr,vif.req_data,vif.req_byteen,vif.req_tag});
   endproperty
   a_req_hold: assert property(p_req_hold);
 
