@@ -65,4 +65,5 @@ package l2_uvm_pkg;
   `include "tests/l2_global_mshr_pressure_test.sv"
   `include "tests/l2_writeback_backpressure_test.sv"
   `include "tests/l2_refill_writeback_overlap_test.sv"
+  `include "tests/l2_flush_test.sv"
 endpackage
