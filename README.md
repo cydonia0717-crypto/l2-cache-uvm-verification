@@ -30,6 +30,12 @@ TEST=l2_smoke_test SEED=1 ./scripts/run_verilator.sh
 
 Vortex is pinned to commit `a4afb2351f4b4464a53779874616d95571c376d0`.
 
+## Verified regression status
+
+GitHub Actions run #45 completed **19 / 19 tests PASS** with **0 UVM_ERROR / 0 UVM_FATAL**. The verified baseline accumulated **283 core-read data checks**, observed **259 refill requests**, **5 dirty writebacks**, and reached **32 simultaneous memory-side outstanding refills** in the four-bank global-MSHR pressure test.
+
+See [docs/Regression_Report.md](docs/Regression_Report.md) for the per-test evidence. No final functional/code coverage percentage is claimed yet; coverage closure remains a separate task.
+
 ## Current verification scope
 
 Implemented first-wave tests include:
