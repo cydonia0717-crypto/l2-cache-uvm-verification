@@ -7,6 +7,11 @@ class l2_coverage extends uvm_component;
   int unsigned max_outstanding_refills;
   bit saw_ooo_refill;
   bit saw_same_line_pending;
+  int unsigned core_req_stall_count;
+  int unsigned core_rsp_stall_count;
+  int unsigned mem_req_stall_count;
+  int unsigned mem_rsp_stall_count;
+  bit [L2_NUM_BANKS-1:0] seen_mem_banks;
   bit [L2_MEM_TAG_W-1:0] mem_read_order[$];
   longint unsigned read_line_by_key[longint unsigned];
   int unsigned line_pending[longint unsigned];
@@ -38,6 +43,8 @@ class l2_coverage extends uvm_component;
     super.new(name,parent); core_imp=new("core_imp",this); mem_imp=new("mem_imp",this);
     core_cg=new(); mem_cg=new();
     outstanding_refills=0; max_outstanding_refills=0; saw_ooo_refill=0; saw_same_line_pending=0;
+    core_req_stall_count=0; core_rsp_stall_count=0; mem_req_stall_count=0; mem_rsp_stall_count=0;
+    seen_mem_banks='0;
   endfunction
 
   function longint unsigned core_key(int unsigned port, bit [L2_CORE_TAG_W-1:0] tag);
@@ -62,11 +69,16 @@ class l2_coverage extends uvm_component;
       end
       read_line_by_key.delete(k);
     end
+    if (o.kind==CORE_REQ_STALL) core_req_stall_count++;
+    if (o.kind==CORE_RSP_STALL) core_rsp_stall_count++;
     core_cg.sample(o.kind,o.port_id,o.rw,o.addr,same_line);
   endfunction
 
   function void write_mem(l2_mem_obs o);
     bit reordered=0;
+    if (o.kind==MEM_REQ_STALL) mem_req_stall_count++;
+    if (o.kind==MEM_RSP_STALL) mem_rsp_stall_count++;
+    if (o.kind==MEM_REQ) seen_mem_banks[o.addr[7:6]] = 1'b1;
     if (o.kind==MEM_REQ && !o.rw) begin
       mem_read_order.push_back(o.tag);
       outstanding_refills++;
@@ -87,7 +99,8 @@ class l2_coverage extends uvm_component;
   endfunction
 
   function void report_phase(uvm_phase phase);
-    `uvm_info("COV",$sformatf("max_mem_outstanding=%0d saw_ooo=%0b saw_same_line_pending=%0b",
-      max_outstanding_refills,saw_ooo_refill,saw_same_line_pending),UVM_LOW)
+    `uvm_info("COV",$sformatf("max_mem_outstanding=%0d saw_ooo=%0b saw_same_line_pending=%0b core_req_stall=%0d core_rsp_stall=%0d mem_req_stall=%0d mem_rsp_stall=%0d banks=0x%0h",
+      max_outstanding_refills,saw_ooo_refill,saw_same_line_pending,
+      core_req_stall_count,core_rsp_stall_count,mem_req_stall_count,mem_rsp_stall_count,seen_mem_banks),UVM_LOW)
   endfunction
 endclass
