@@ -31,7 +31,7 @@ INC=(
   "+incdir+$ROOT/tb/coverage" "+incdir+$ROOT/tb/tests" "+incdir+$ROOT/tb/assertions"
 )
 
-mapfile -t IFS < <(find "$VORTEX/hw/rtl/interfaces" -maxdepth 1 -name '*.sv' | sort)
+mapfile -t IF_SRCS < <(find "$VORTEX/hw/rtl/interfaces" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t MEM < <(find "$VORTEX/hw/rtl/mem" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t LIBS < <(find "$VORTEX/hw/rtl/libs" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t CACHE < <(find "$VORTEX/hw/rtl/cache" -maxdepth 1 -name '*.sv' | sort)
@@ -49,7 +49,7 @@ fi
   "${INC[@]}" \
   "$UVM_HOME/uvm_pkg.sv" \
   "$VORTEX/hw/rtl/VX_gpu_pkg.sv" \
-  "${IFS[@]}" "${MEM[@]}" "${LIBS[@]}" "${CACHE[@]}" \
+  "${IF_SRCS[@]}" "${MEM[@]}" "${LIBS[@]}" "${CACHE[@]}" \
   "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv" \
   "$ROOT/rtl/l2_cache_dut_wrapper.sv" \
   "$ROOT/tb/assertions/l2_assertions.sv" \
