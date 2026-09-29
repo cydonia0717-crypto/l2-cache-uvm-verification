@@ -24,18 +24,20 @@ if command -v apt-get >/dev/null 2>&1; then
   fi
 fi
 
-if [ ! -d "$VERILATOR_SRC/.git" ]; then
-  git clone https://github.com/verilator/verilator.git "$VERILATOR_SRC"
-fi
-git -C "$VERILATOR_SRC" fetch --tags --force
-git -C "$VERILATOR_SRC" checkout --detach "$VERILATOR_TAG"
-if [ ! -x "$VERILATOR_PREFIX/bin/verilator" ]; then
-  pushd "$VERILATOR_SRC" >/dev/null
-  autoconf
-  ./configure --prefix="$VERILATOR_PREFIX"
-  make -j"$(nproc)"
-  make install
-  popd >/dev/null
+if [ "${SKIP_VERILATOR_BUILD:-0}" != "1" ]; then
+  if [ ! -d "$VERILATOR_SRC/.git" ]; then
+    git clone https://github.com/verilator/verilator.git "$VERILATOR_SRC"
+  fi
+  git -C "$VERILATOR_SRC" fetch --tags --force
+  git -C "$VERILATOR_SRC" checkout --detach "$VERILATOR_TAG"
+  if [ ! -x "$VERILATOR_PREFIX/bin/verilator" ]; then
+    pushd "$VERILATOR_SRC" >/dev/null
+    autoconf
+    ./configure --prefix="$VERILATOR_PREFIX"
+    make -j"$(nproc)"
+    make install
+    popd >/dev/null
+  fi
 fi
 
 if [ ! -d "$UVM/.git" ]; then
@@ -55,15 +57,23 @@ pushd "$VBUILD" >/dev/null
 popd >/dev/null
 
 cat > "$ROOT/.env.oss" <<ENV
-export VERILATOR_ROOT="$VERILATOR_PREFIX/share/verilator"
-export PATH="$VERILATOR_PREFIX/bin:\$PATH"
 export UVM_HOME="$UVM/src"
 export VORTEX_HOME="$VORTEX"
 export VORTEX_BUILD="$VBUILD"
 ENV
+if [ "${SKIP_VERILATOR_BUILD:-0}" != "1" ]; then
+  cat >> "$ROOT/.env.oss" <<ENV
+export VERILATOR_ROOT="$VERILATOR_PREFIX/share/verilator"
+export PATH="$VERILATOR_PREFIX/bin:\$PATH"
+ENV
+fi
 
 printf '\nOpen-source simulation stack ready.\n'
-printf '  Verilator: %s\n' "$($VERILATOR_PREFIX/bin/verilator --version)"
+if [ "${SKIP_VERILATOR_BUILD:-0}" != "1" ]; then
+  printf '  Verilator: %s\n' "$($VERILATOR_PREFIX/bin/verilator --version)"
+else
+  printf '  Verilator: Docker image verilator/verilator:5.052\n'
+fi
 printf '  UVM:       %s @ %s\n' "$UVM" "$UVM_COMMIT"
 printf '  Vortex:    %s @ %s\n' "$VORTEX" "$VORTEX_COMMIT"
 printf 'Run: source .env.oss && TEST=l2_smoke_test ./scripts/run_verilator.sh\n'
