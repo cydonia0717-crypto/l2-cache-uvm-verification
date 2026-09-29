@@ -9,7 +9,11 @@ simv*
 urgReport/
 coverage/
 regression_out/
+out/
+.tools/
+.env.oss
 third_party/vortex/
 third_party/vortex_build/
+third_party/uvm/
 __pycache__/
 *.pyc
