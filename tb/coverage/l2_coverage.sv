@@ -11,6 +11,7 @@ class l2_coverage extends uvm_component;
   int unsigned core_rsp_stall_count;
   int unsigned mem_req_stall_count;
   int unsigned mem_rsp_stall_count;
+  bit [L2_NUM_PORTS-1:0] core_traffic_started;
   bit [L2_NUM_BANKS-1:0] seen_mem_banks;
   bit [L2_MEM_TAG_W-1:0] mem_read_order[$];
   longint unsigned read_line_by_key[longint unsigned];
@@ -44,7 +45,7 @@ class l2_coverage extends uvm_component;
     core_cg=new(); mem_cg=new();
     outstanding_refills=0; max_outstanding_refills=0; saw_ooo_refill=0; saw_same_line_pending=0;
     core_req_stall_count=0; core_rsp_stall_count=0; mem_req_stall_count=0; mem_rsp_stall_count=0;
-    seen_mem_banks='0;
+    core_traffic_started='0; seen_mem_banks='0;
   endfunction
 
   function longint unsigned core_key(int unsigned port, bit [L2_CORE_TAG_W-1:0] tag);
@@ -69,7 +70,12 @@ class l2_coverage extends uvm_component;
       end
       read_line_by_key.delete(k);
     end
-    if (o.kind==CORE_REQ_STALL) core_req_stall_count++;
+    // Vortex initializes cache metadata after reset while the first request may
+    // already be held valid.  Do not classify that one-time bring-up latency as
+    // resource/backpressure coverage.  Runtime stall accounting starts only
+    // after this port has completed its first request handshake.
+    if (o.kind==CORE_REQ) core_traffic_started[o.port_id]=1'b1;
+    if (o.kind==CORE_REQ_STALL && core_traffic_started[o.port_id]) core_req_stall_count++;
     if (o.kind==CORE_RSP_STALL) core_rsp_stall_count++;
     core_cg.sample(o.kind,o.port_id,o.rw,o.addr,same_line);
   endfunction
