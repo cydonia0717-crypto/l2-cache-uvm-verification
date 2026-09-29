@@ -32,19 +32,7 @@ mapfile -t MEM < <(find "$VORTEX/hw/rtl/mem" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t LIBS < <(find "$VORTEX/hw/rtl/libs" -maxdepth 1 -name '*.sv' | sort)
 mapfile -t CACHE < <(find "$VORTEX/hw/rtl/cache" -maxdepth 1 -name '*.sv' | sort)
 
-verilator --binary --timing --assert --coverage -j "$(nproc)" \
-  -Wno-fatal -Wno-lint -Wno-style -Wno-COVERIGN -Wno-MULTITOP \
-  --top-module tb_top --Mdir obj_dir -o simv \
-  +define+NDEBUG +define+UVM_NO_DPI \
-  "${INC[@]}" \
-  "$UVM_HOME/uvm_pkg.sv" \
-  "$VORTEX/hw/rtl/VX_gpu_pkg.sv" \
-  "${IFS[@]}" "${MEM[@]}" "${LIBS[@]}" "${CACHE[@]}" \
-  "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv" \
-  "$ROOT/rtl/l2_cache_dut_wrapper.sv" \
-  "$ROOT/tb/assertions/l2_assertions.sv" \
-  "$ROOT/tb/l2_uvm_pkg.sv" "$ROOT/tb/tb_top.sv" \
-  2>&1 | tee compile.log
+verilator --binary --timing --assert --coverage -j "$(nproc)"   -Wno-fatal -Wno-lint -Wno-style -Wno-COVERIGN -Wno-MULTITOP   --top-module tb_top --Mdir obj_dir -o simv   +define+NDEBUG +define+UVM_NO_DPI +define+VX_CFG_XLEN=64 +define+VX_CFG_XLEN_64   "${INC[@]}"   "$UVM_HOME/uvm_pkg.sv"   "$VORTEX/hw/rtl/VX_gpu_pkg.sv"   "${IFS[@]}" "${MEM[@]}" "${LIBS[@]}" "${CACHE[@]}"   "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv"   "$ROOT/rtl/l2_cache_dut_wrapper.sv"   "$ROOT/tb/assertions/l2_assertions.sv"   "$ROOT/tb/l2_uvm_pkg.sv" "$ROOT/tb/tb_top.sv"   2>&1 | tee compile.log
 
 ./obj_dir/simv +UVM_TESTNAME="$TEST" +verilator+seed+"$SEED" 2>&1 | tee run.log
 
