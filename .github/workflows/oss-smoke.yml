@@ -8,28 +8,22 @@ on:
 jobs:
   verilator-uvm:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Cache toolchain
-        uses: actions/cache@v4
-        with:
-          path: .tools/verilator-install
-          key: verilator-5.052-${{ runner.os }}-${{ runner.arch }}
-          save-always: true
-      - name: Bootstrap Verilator/UVM/Vortex
-        run: bash scripts/bootstrap_oss.sh
+      - name: Bootstrap UVM/Vortex
+        run: SKIP_VERILATOR_BUILD=1 bash scripts/bootstrap_oss.sh
       - name: Static project checks
         run: python3 scripts/check_project.py
       - name: Smoke
         run: |
           source .env.oss
-          TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
+          VERILATOR_DOCKER=1 TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
       - name: Same-line merge
         run: |
           source .env.oss
-          TEST=l2_same_line_merge_test SEED=2 bash scripts/run_verilator.sh
+          VERILATOR_DOCKER=1 TEST=l2_same_line_merge_test SEED=2 bash scripts/run_verilator.sh
       - name: MSHR pressure
         run: |
           source .env.oss
-          TEST=l2_mshr_full_test SEED=3 bash scripts/run_verilator.sh
+          VERILATOR_DOCKER=1 TEST=l2_mshr_full_test SEED=3 bash scripts/run_verilator.sh
