@@ -9,7 +9,7 @@ package l2_uvm_pkg;
   localparam int L2_CORE_TAG_W  = 16;
   localparam int L2_LINE_BYTES  = 64;
   localparam int L2_LINE_BITS   = 512;
-  localparam int L2_MEM_TAG_W   = 6; // NDEBUG: UUID=1, log2(MSHR=8)=3, log2(4 banks)=2
+  localparam int L2_MEM_TAG_W   = 6;
   localparam int L2_MSHR_SIZE   = 8;
   localparam int L2_NUM_BANKS   = 4;
   localparam int L2_NUM_WAYS    = 4;
@@ -51,5 +51,7 @@ package l2_uvm_pkg;
   `include "tests/l2_ooo_refill_test.sv"
   `include "tests/l2_same_line_merge_test.sv"
   `include "tests/l2_dirty_eviction_test.sv"
+  `include "tests/l2_clean_eviction_test.sv"
+  `include "tests/l2_bank_hotspot_test.sv"
   `include "tests/l2_random_test.sv"
 endpackage
