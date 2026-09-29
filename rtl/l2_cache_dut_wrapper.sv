@@ -22,6 +22,7 @@ module l2_cache_dut_wrapper import VX_gpu_pkg::*; #(
     input  wire                         core_req_valid  [NUM_REQS],
     output wire                         core_req_ready  [NUM_REQS],
     input  wire                         core_req_rw     [NUM_REQS],
+    input  wire                         core_req_flush  [NUM_REQS],
     input  wire [MEM_ADDR_W-1:0]        core_req_addr   [NUM_REQS], // byte address
     input  wire [WORD_SIZE*8-1:0]       core_req_data   [NUM_REQS],
     input  wire [WORD_SIZE-1:0]         core_req_byteen [NUM_REQS],
@@ -65,7 +66,7 @@ module l2_cache_dut_wrapper import VX_gpu_pkg::*; #(
         assign core_bus_if[i].req_data.addr  = core_req_addr[i] >> WORD_LSB;
         assign core_bus_if[i].req_data.data  = core_req_data[i];
         assign core_bus_if[i].req_data.byteen= core_req_byteen[i];
-        assign core_bus_if[i].req_data.attr  = '0;
+        assign core_bus_if[i].req_data.attr  = MEM_ATTR_WIDTH'(core_req_flush[i] << MEM_ATTR_FLUSH_OFFS);
         assign core_bus_if[i].req_data.tag   = core_req_tag[i];
         assign core_req_ready[i]             = core_bus_if[i].req_ready;
 
