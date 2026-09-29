@@ -6,6 +6,7 @@ class l2_mem_responder extends uvm_component;
   l2_pending_rsp pending[$];
   int unsigned cycle_count;
   bit rsp_busy;
+  int unsigned read_accept_count;
   l2_pending_rsp active_rsp;
 
   function new(string name, uvm_component parent); super.new(name,parent); endfunction
@@ -41,6 +42,7 @@ class l2_mem_responder extends uvm_component;
     vif.rsp_cb.rsp_tag   <= '0;
     cycle_count = 0;
     rsp_busy = 0;
+    read_accept_count = 0;
     forever begin
       @(vif.rsp_cb);
       cycle_count++;
@@ -53,7 +55,7 @@ class l2_mem_responder extends uvm_component;
 
       vif.rsp_cb.req_ready <= ($urandom_range(0,99) >= cfg.req_stall_pct);
 
-      if (vif.rsp_cb.req_valid && vif.rsp_cb.req_ready) begin
+      if (vif.rsp_cb.req_valid && vif.req_ready) begin
         if (vif.rsp_cb.req_rw) begin
           apply_write(vif.rsp_cb.req_addr, vif.rsp_cb.req_data, vif.rsp_cb.req_byteen);
         end else begin
@@ -61,7 +63,15 @@ class l2_mem_responder extends uvm_component;
           p.addr = vif.rsp_cb.req_addr;
           p.tag  = vif.rsp_cb.req_tag;
           p.data = read_line(vif.rsp_cb.req_addr);
-          p.due_cycle = cycle_count + $urandom_range(cfg.max_read_latency, cfg.min_read_latency);
+          if (cfg.force_ooo) begin
+            int unsigned skew = read_accept_count * 3;
+            int unsigned lat = (cfg.max_read_latency > skew) ? (cfg.max_read_latency-skew) : cfg.min_read_latency;
+            if (lat < cfg.min_read_latency) lat = cfg.min_read_latency;
+            p.due_cycle = cycle_count + lat;
+          end else begin
+            p.due_cycle = cycle_count + $urandom_range(cfg.max_read_latency, cfg.min_read_latency);
+          end
+          read_accept_count++;
           pending.push_back(p);
         end
       end
@@ -79,7 +89,7 @@ class l2_mem_responder extends uvm_component;
         for (int i=0;i<pending.size();i++)
           if (pending[i].due_cycle <= cycle_count) ready_idx.push_back(i);
         if (ready_idx.size() != 0) begin
-          int pick = cfg.enable_ooo ? $urandom_range(ready_idx.size()-1,0) : 0;
+          int pick = cfg.force_ooo ? (ready_idx.size()-1) : (cfg.enable_ooo ? $urandom_range(ready_idx.size()-1,0) : 0);
           int idx  = ready_idx[pick];
           active_rsp = pending[idx];
           pending.delete(idx);
