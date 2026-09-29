@@ -12,22 +12,60 @@ concurrency:
 jobs:
   verilator-uvm:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+
       - name: Bootstrap UVM/Vortex
         run: SKIP_APT=1 SKIP_VERILATOR_BUILD=1 bash scripts/bootstrap_oss.sh
+
       - name: Static project checks
         run: python3 scripts/check_project.py
-      - name: Smoke
+
+      - name: Compile + smoke
         run: |
           source .env.oss
-          VERILATOR_DOCKER=1 TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
-      - name: Same-line merge
+          VERILATOR_DOCKER=1 FORCE_REBUILD=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
+
+      - name: Same-line pending miss
         run: |
           source .env.oss
-          VERILATOR_DOCKER=1 TEST=l2_same_line_merge_test SEED=2 bash scripts/run_verilator.sh
-      - name: MSHR pressure
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_same_line_merge_test SEED=2 bash scripts/run_verilator.sh
+
+      - name: MSHR full pressure
         run: |
           source .env.oss
-          VERILATOR_DOCKER=1 TEST=l2_mshr_full_test SEED=3 bash scripts/run_verilator.sh
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_mshr_full_test SEED=3 bash scripts/run_verilator.sh
+
+      - name: Out-of-order refill
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_ooo_refill_test SEED=4 bash scripts/run_verilator.sh
+
+      - name: Clean eviction
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_clean_eviction_test SEED=5 bash scripts/run_verilator.sh
+
+      - name: Dirty eviction
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_dirty_eviction_test SEED=6 bash scripts/run_verilator.sh
+
+      - name: Bank hotspot
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_bank_hotspot_test SEED=7 bash scripts/run_verilator.sh
+
+      - name: Random stress
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            TEST=l2_random_test SEED=8 bash scripts/run_verilator.sh
