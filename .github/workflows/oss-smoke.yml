@@ -16,6 +16,7 @@ jobs:
         with:
           path: .tools/verilator-install
           key: verilator-5.052-${{ runner.os }}-${{ runner.arch }}
+          save-always: true
       - name: Bootstrap Verilator/UVM/Vortex
         run: bash scripts/bootstrap_oss.sh
       - name: Static project checks
