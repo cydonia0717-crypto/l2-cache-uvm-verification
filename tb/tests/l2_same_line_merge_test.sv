@@ -7,6 +7,8 @@ class l2_same_line_merge_test extends l2_base_test;
     l2_same_line_seq b=l2_same_line_seq::type_id::create("b");
     phase.raise_objection(this); a.word=0; b.word=3;
     fork a.start(env.core0.sqr); b.start(env.core1.sqr); join
-    wait_cycles(180); phase.drop_objection(this);
+    wait_cycles(180);
+    if (!env.cov.saw_same_line_pending) `uvm_error("SAME_LINE","same-line pending condition was not observed")
+    phase.drop_objection(this);
   endtask
 endclass
