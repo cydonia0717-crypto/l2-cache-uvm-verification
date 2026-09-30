@@ -71,3 +71,47 @@ bind VX_cache_flush l2_vortex_flush_internal_assertions u_l2_flush_internal_sva 
   .mshr_empty (mshr_empty),
   .bank_empty (bank_empty)
 );
+
+
+//
+// White-box MSHR invariant for upstream Vortex fix 35e85f6.
+//
+// A newly allocated request must never be linked behind an MSHR entry that is
+// being released as a hit in the same cycle.  That entry will never receive a
+// fill/dequeue event, so such a link would orphan the younger request forever.
+//
+module l2_vortex_mshr_internal_assertions #(
+  parameter int ID_W = 1
+) (
+  input logic              clk,
+  input logic              reset,
+  input logic              allocate_fire,
+  input logic              allocate_pending,
+  input logic [ID_W-1:0]   allocate_previd,
+  input logic              finalize_valid,
+  input logic              finalize_is_release,
+  input logic [ID_W-1:0]   finalize_id
+);
+  property p_no_coalesce_onto_releasing_entry;
+    @(posedge clk) disable iff (reset)
+      !(allocate_fire && finalize_valid && finalize_is_release &&
+        allocate_pending && (allocate_previd == finalize_id));
+  endproperty
+
+  a_no_coalesce_onto_releasing_entry:
+    assert property (p_no_coalesce_onto_releasing_entry)
+      else $error("MSHR_RELEASE_COALESCE: allocation linked behind an entry released in the same cycle");
+endmodule
+
+bind VX_cache_mshr l2_vortex_mshr_internal_assertions #(
+  .ID_W (MSHR_ADDR_WIDTH)
+) u_l2_mshr_internal_sva (
+  .clk                 (clk),
+  .reset               (reset),
+  .allocate_fire       (allocate_fire),
+  .allocate_pending    (allocate_pending),
+  .allocate_previd     (allocate_previd),
+  .finalize_valid      (finalize_valid),
+  .finalize_is_release (finalize_is_release),
+  .finalize_id         (finalize_id)
+);
