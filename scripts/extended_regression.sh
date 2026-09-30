@@ -23,6 +23,7 @@ tests=(
   "l2_four_way_residency_test:25"
   "l2_byteen_sweep_test:26"
   "l2_flush_pipeline_race_test:27"
+  "l2_plru_victim_test:28"
 )
 
 for spec in "${tests[@]}"; do
