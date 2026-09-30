@@ -1,26 +1,52 @@
 # Simulation Environment
 
-## Primary sign-off environment
+## Primary industry-oriented environment
 
-The project targets Linux + Synopsys VCS/Verdi for the main UVM regression and waveform-debug workflow. `scripts/run_vcs.sh` compiles with UVM 1.2 and enables line/condition/FSM/toggle/branch code coverage.
+The project targets **Linux + Synopsys VCS/Verdi + UVM 1.2** for the commercial-simulator workflow.
 
-VCS and Verdi are commercial licensed tools. They are intentionally not bundled in this repository.
+`scripts/run_vcs.sh`:
 
-## Open-source bring-up environment
+- builds the pinned Vortex cache RTL and project UVM environment;
+- supports the same selectable bank-pipeline latency used by the open-source flow;
+- compiles SVA and code coverage (`line+cond+fsm+tgl+branch`);
+- writes each test/seed into a separate run directory;
+- reuses a compiled `simv` image unless `FORCE_REBUILD=1`;
+- treats a non-zero UVM error/fatal summary as a failed run.
 
-For reproducible public CI and basic bring-up, the project also supports:
+Single test:
 
-- Verilator v5.052
-- `verilator/uvm` pinned at commit `656f20d087370a7c742e00188d20bbf30fa95339`
-- Vortex pinned at commit `a4afb2351f4b4464a53779874616d95571c376d0`
-- UVM code is kept source-compatible with the UVM 1.2 coding style used by the VCS flow while open-source CI compiles against the Verilator-compatible UVM tree.
+```bash
+./scripts/setup_vortex.sh
+TEST=l2_smoke_test SEED=1 bash scripts/run_vcs.sh
+```
+
+Full VCS regression:
+
+```bash
+bash scripts/vcs_regression.sh
+```
+
+The regression script executes the same 27 functional/stress tests plus five additional random seeds. If `urg` is available, it also merges the generated `simv.vdb` databases into `out/vcs/urg_report`.
+
+VCS and Verdi are commercial licensed tools and are not bundled in this repository. The VCS scripts have been shell/static reviewed, but this public project does **not** claim a measured VCS/URG result because the ChatGPT execution environment does not contain a Synopsys license.
+
+## Reproducible open-source CI environment
+
+The measured public regression uses:
+
+- Verilator/UVM open-source simulation;
+- `verilator/uvm` pinned at commit `656f20d087370a7c742e00188d20bbf30fa95339`;
+- Vortex pinned at commit `a4afb2351f4b4464a53779874616d95571c376d0`;
+- UVM source kept close to the UVM 1.2 component/sequence/config-db style used by the VCS flow.
 
 Bootstrap:
 
 ```bash
-./scripts/bootstrap_oss.sh
+bash scripts/bootstrap_oss.sh
 source .env.oss
-TEST=l2_smoke_test SEED=1 ./scripts/run_verilator.sh
+TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
 ```
 
-The Verilator path is a bring-up/CI path, not a replacement for final VCS/Verdi sign-off. UVM support in Verilator is improving rapidly, so a simulator-specific limitation must be distinguished from a DUT/TB bug before changing verification intent.
+GitHub Actions run #81 is the current measured baseline. It completes the functional/stress suite, additional random seeds, coverage merge and two historical-bug mutation checks.
+
+The Verilator flow is the reproducible CI evidence path, while VCS/Verdi remains the intended commercial-simulator/debug flow.
