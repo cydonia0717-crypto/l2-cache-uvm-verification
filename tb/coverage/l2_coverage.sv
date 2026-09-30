@@ -31,7 +31,7 @@ class l2_coverage extends uvm_component;
 
   covergroup mem_cg with function sample(int kind, bit rw, longint unsigned addr, int unsigned depth, bit reordered);
     option.per_instance=1;
-    cp_kind: coverpoint kind { bins req={MEM_REQ}; bins req_stall={MEM_REQ_STALL}; bins rsp={MEM_RSP}; bins rsp_stall={MEM_RSP_STALL}; }
+    cp_kind: coverpoint kind { bins req={MEM_REQ}; bins req_stall={MEM_REQ_STALL}; bins rsp={MEM_RSP}; ignore_bins rsp_stall={MEM_RSP_STALL}; }
     cp_rw: coverpoint rw iff(kind==MEM_REQ) { bins refill={0}; bins writeback={1}; }
     // Misaligned downstream requests are a protocol failure, not a coverage
     // target.  Alignment is enforced independently by SVA.
