@@ -10,6 +10,11 @@ module tb_top;
   localparam int DATA_W     = 64;
   localparam int TAG_W      = 16;
   localparam int LINE_BYTES = 64;
+`ifndef L2_BANK_LATENCY
+  localparam int BANK_LATENCY = 2;
+`else
+  localparam int BANK_LATENCY = `L2_BANK_LATENCY;
+`endif
   localparam int MEM_TAG_W  = `CACHE_MEM_TAG_WIDTH(8,4,1,VX_gpu_pkg::UUID_WIDTH);
 
   logic clk=0;
@@ -73,7 +78,7 @@ module tb_top;
   l2_cache_dut_wrapper #(
     .NUM_REQS(NUM_REQS), .MEM_PORTS(MEM_PORTS), .CACHE_SIZE(256*1024),
     .LINE_SIZE(64), .SECTOR_SIZE(64), .NUM_BANKS(4), .NUM_WAYS(4),
-    .WORD_SIZE(8), .MSHR_SIZE(8), .MRSQ_SIZE(8), .LATENCY(2),
+    .WORD_SIZE(8), .MSHR_SIZE(8), .MRSQ_SIZE(8), .LATENCY(BANK_LATENCY),
     .CORE_TAG_W(TAG_W), .MEM_ADDR_W(ADDR_W), .MEM_TAG_W(MEM_TAG_W)
   ) dut (.*);
 
