@@ -7,6 +7,7 @@ VBUILD=${VORTEX_BUILD:-"$ROOT/third_party/vortex_build"}
 UVM_HOME=${UVM_HOME:-"$ROOT/third_party/uvm/src"}
 TEST=${TEST:-l2_smoke_test}
 SEED=${SEED:-1}
+BANK_LATENCY=${BANK_LATENCY:-2}
 
 # Compile once, run many tests.  BUILD_OUT is shared across a regression while
 # OUT remains test/seed specific so logs and coverage data do not overwrite.
@@ -55,7 +56,7 @@ if [ "$FORCE_REBUILD" = "1" ] || [ ! -x "$BUILD_OUT/obj_dir/simv" ]; then
   "${VERILATOR_CMD[@]}" --binary --timing --assert --coverage -j "$(nproc)" \
     -Wno-fatal -Wno-lint -Wno-style -Wno-COVERIGN -Wno-MULTITOP \
     --top-module tb_top --Mdir obj_dir -o simv \
-    +define+NDEBUG +define+UVM_NO_DPI +define+VX_CFG_XLEN=64 +define+VX_CFG_XLEN_64 \
+    +define+NDEBUG +define+UVM_NO_DPI +define+VX_CFG_XLEN=64 +define+VX_CFG_XLEN_64 +define+L2_BANK_LATENCY=$BANK_LATENCY \
     "${INC[@]}" \
     "$UVM_HOME/uvm_pkg.sv" \
     "$VORTEX/hw/rtl/VX_gpu_pkg.sv" \
