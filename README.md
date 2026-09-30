@@ -88,4 +88,4 @@ TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
 
 The cache RTL is open-source Apache-2.0 Vortex code. The portfolio contribution is the DUT configuration/wrapper, vPlan, UVM environment, agents, memory model, scoreboard, assertions, functional coverage, testcase design, regression/coverage infrastructure, mutation verification and debug/closure work.
 
-See `docs/Verification_Plan.md`, `docs/TB_Architecture.md`, `docs/Regression_Report.md`, `docs/Regression_Evidence.md` and `docs/Interview_Notes.md`.
+See `docs/Verification_Plan.md`, `docs/TB_Architecture.md`, `docs/Regression_Report.md`, `docs/Regression_Evidence.md`, `docs/Debug_Report.md`, `docs/Interview_Notes.md`, and `docs/Resume_Project_Description_CN.md`.
