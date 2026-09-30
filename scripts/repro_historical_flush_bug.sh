@@ -39,6 +39,7 @@ PY
 echo "[mutation] reintroduced Vortex historical flush bug a686ceec parent behavior"
 echo "[mutation] fixed guard:   $fixed"
 echo "[mutation] mutant guard:  $mutant"
+echo "[mutation] stress config: L2 bank LATENCY=4 so bank_empty remains low after MSHR drain"
 
 set +e
 VERILATOR_DOCKER=${VERILATOR_DOCKER:-1} \
@@ -47,6 +48,7 @@ BUILD_OUT="$MUT_BUILD" \
 OUT="$MUT_OUT" \
 TEST=l2_flush_pipeline_race_test \
 SEED=91 \
+BANK_LATENCY=4 \
 bash "$ROOT/scripts/run_verilator.sh" >"$MUT_OUT/mutation_console.log" 2>&1
 rc=$?
 set -e
