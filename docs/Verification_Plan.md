@@ -36,6 +36,6 @@ The project is considered ready for resume/interview use only after:
 3. no unexplained scoreboard or assertion failure remains;
 4. functional coverage holes are classified as reachable, unreachable, or out-of-scope;
 5. code coverage holes in control logic are reviewed rather than waived solely by percentage;
-6. at least two real debug cases are documented with waveform-level root cause and fix/understanding.
+6. at least two high-risk control scenarios have evidence beyond a passing end-to-end test; the current baseline uses historical-bug mutation plus white-box SVA for flush quiescence and MSHR release/coalesce lifetime.
 
-No fabricated coverage percentage should be placed on a resume before an actual VCS/URG run is available.
+The current published coverage numbers are measured by the open-source Verilator/UVM CI flow. Do not relabel them as VCS/URG results unless a licensed VCS regression is actually executed.
