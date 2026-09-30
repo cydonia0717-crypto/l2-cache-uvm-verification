@@ -20,6 +20,9 @@ tests=(
   "l2_flush_test:22"
   "l2_set_slice_sweep_test:23"
   "l2_mem_rsp_backpressure_test:24"
+  "l2_four_way_residency_test:25"
+  "l2_byteen_sweep_test:26"
+  "l2_flush_pipeline_race_test:27"
 )
 
 for spec in "${tests[@]}"; do

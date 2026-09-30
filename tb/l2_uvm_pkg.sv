@@ -68,4 +68,7 @@ package l2_uvm_pkg;
   `include "tests/l2_flush_test.sv"
   `include "tests/l2_set_slice_sweep_test.sv"
   `include "tests/l2_mem_rsp_backpressure_test.sv"
+  `include "tests/l2_four_way_residency_test.sv"
+  `include "tests/l2_byteen_sweep_test.sv"
+  `include "tests/l2_flush_pipeline_race_test.sv"
 endpackage
