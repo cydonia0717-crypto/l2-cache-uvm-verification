@@ -82,6 +82,11 @@ jobs:
           VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
             bash scripts/random_multiseed.sh
 
+      - name: Historical flush-race mutation
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 bash scripts/repro_historical_flush_bug.sh
+
       - name: Merge coverage
         if: always()
         run: bash scripts/merge_coverage.sh
@@ -98,5 +103,6 @@ jobs:
             out/verilator/coverage/merged.info
             out/verilator/coverage/summary.txt
             out/verilator/coverage/scope_summary.txt
+            out/mutation/historical-flush-race/**
           if-no-files-found: warn
           retention-days: 30
