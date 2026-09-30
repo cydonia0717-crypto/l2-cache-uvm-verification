@@ -72,4 +72,5 @@ package l2_uvm_pkg;
   `include "tests/l2_byteen_sweep_test.sv"
   `include "tests/l2_flush_pipeline_race_test.sv"
   `include "tests/l2_plru_victim_test.sv"
+  `include "tests/l2_release_coalesce_race_test.sv"
 endpackage
