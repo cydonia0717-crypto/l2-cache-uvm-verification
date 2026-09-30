@@ -8,7 +8,7 @@ class l2_byteen_sweep_seq extends l2_base_seq;
     send_read(base);
     for (int be=1; be<256; be++) begin
       d = 64'hA55A_0123_89AB_CDEF ^ (longint'(be) * 64'h0101_0101_0101_0101);
-      send_write(base,d,bit'(be[7:0]));
+      send_write(base,d,be[7:0]);
       send_read(base);
     end
   endtask
