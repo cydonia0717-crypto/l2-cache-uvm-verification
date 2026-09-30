@@ -8,6 +8,7 @@ class l2_scoreboard extends uvm_component;
   bit exp_flush[longint unsigned];
   int unsigned checks, errors, flush_responses;
   int unsigned mem_refill_reqs, mem_writebacks;
+  longint unsigned writeback_addrs[$];
 
   function new(string name, uvm_component parent);
     super.new(name,parent); core_imp=new("core_imp",this); mem_imp=new("mem_imp",this);
@@ -68,6 +69,7 @@ class l2_scoreboard extends uvm_component;
     if (o.kind==MEM_REQ && !o.rw) mem_refill_reqs++;
     if (o.kind==MEM_REQ && o.rw) begin
       mem_writebacks++;
+      writeback_addrs.push_back(o.addr);
       for (int i=0;i<L2_LINE_BYTES;i++) begin
         if (o.byteen[i] && o.data[i*8 +: 8] !== get_byte(o.addr+i)) begin
           errors++;
