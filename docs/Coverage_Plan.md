@@ -1,26 +1,51 @@
-# Coverage Plan
+# Coverage Plan and Closure Status
 
-The initial collector samples completed or stalled interface activity rather than sequence intent.
+The coverage strategy separates **architectural/transaction coverage**, **stateful concurrency coverage**, **assertion coverage**, and **RTL code coverage**. Stimulus intent is not sampled directly; observations come from accepted/completed interface activity and monitor history.
 
-Current coverpoints include:
+## Functional coverage model
 
-- core request / response / request-stall / response-stall event types;
-- port 0 / port 1;
-- read / write;
-- cache-line word offset classes;
-- address set slices;
-- memory refill / writeback;
-- memory request / response stall;
-- core-port × operation cross.
+Covered categories include:
 
-The second closure pass should add stateful coverage computed from monitor history:
+- core request, response, request-stall and response-stall events;
+- port 0 / port 1 and read/write operation;
+- cache-line word-offset classes;
+- address/set slices and all four banks;
+- refill vs dirty writeback;
+- outstanding refill depth including 8-entry same-bank saturation and 32-entry aggregate pressure;
+- same-line pending requests;
+- in-order vs out-of-order refill completion;
+- memory-request backpressure;
+- core-response backpressure;
+- selected crosses such as port × operation.
 
-- outstanding miss depth 1..8;
-- MSHR-full stall;
-- same-line vs different-line concurrent miss;
-- same-bank vs different-bank concurrency;
-- refill ordering distance;
-- dirty eviction × memory backpressure;
-- response backpressure × outstanding depth;
-- replacement-way distribution;
-- hit/miss classification inferred from downstream traffic.
+Measured reachable closure in run #81: **52 / 52 bins = 100%**.
+
+Two raw `mem_rsp_stall` bins are classified unreachable for the current standalone cache/memory-interface configuration: the external response-ready path remains asserted for the exercised response traffic because of the internal response queue. They are retained in the model as documentation but excluded from the reachable-bin denominator.
+
+## Assertions
+
+Boundary SVA checks request/response payload stability while stalled and memory-request line alignment.
+
+Two white-box invariants target high-risk lifetime/control behavior:
+
+- flush cannot leave WAIT1 while `mshr_empty && !bank_empty`;
+- a new MSHR allocation cannot link behind an entry being finalized/released in the same cycle.
+
+Both invariants have been proven useful by killing historical Vortex bug mutations in run #81.
+
+## Code coverage
+
+Merged Verilator coverage for the **Vortex cache RTL scope** in run #81:
+
+| Metric | Result |
+|---|---:|
+| Line | **94.6%** (87 / 92) |
+| Branch | **84.7%** (461 / 544) |
+| Expression | **84.1%** (1974 / 2348) |
+| Toggle | **61.0%** (23779 / 38962) |
+
+Code coverage holes are reviewed by control relevance rather than closed by random stimulus solely to inflate a percentage. Generic Vortex library code and UVM infrastructure are reported separately and are not mixed into the DUT metric.
+
+## Closure rule
+
+A feature is considered closed only when its directed/random scenario passes, the associated checker/assertion remains clean, the intended functional bin is hit or classified, and relevant code-coverage holes have been reviewed.

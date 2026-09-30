@@ -1,43 +1,69 @@
 # Regression Evidence
 
-This file records measured results from GitHub Actions rather than estimated resume numbers.
+All values below are taken from actual GitHub Actions logs; they are not estimated resume targets.
 
-## Baseline green regression
+## Current green regression
 
-GitHub Actions run **#70** (commit `d3478ba5a2add11f3cf183fe9a201115312929c4`) completed successfully on the open-source Verilator/UVM flow.
+- Workflow: `oss-smoke`
+- GitHub Actions run: **#81**
+- Commit: `03d0b8f6984e9e1a64a12873bf30d3d3ab07d281`
+- Result: **PASS**
+- Simulator: Verilator/UVM open-source CI flow
+- DUT: pinned Vortex cache RTL
 
-The run executed the directed cache suite plus a five-seed constrained-random regression. Across the observed tests:
+The run executed 27 unique functional/stress test classes plus five additional random seeds. Across the resulting **32 unmutated simulations**:
 
-- no UVM errors or fatals were reported;
-- a same-bank MSHR-pressure test reached **8 simultaneous memory refills** and observed upstream request backpressure;
-- global traffic reached **32 outstanding memory refills** across the four banks;
-- random stress exercised both upstream ports, all four banks, memory-request backpressure and core-response backpressure;
-- flush testing observed dirty writebacks and a flush completion response.
+| Observation | Measured value |
+|---|---:|
+| Core-read scoreboard checks | **1,234** |
+| UVM scoreboard errors | **0** |
+| Refill requests | **871** |
+| Dirty writebacks | **14** |
+| Completed whole-cache flushes | **2** |
+| Peak memory-side outstanding refills | **32** |
+| Core request stall cycles observed | **3,552** |
+| Core response stall cycles observed | **125** |
+| Memory request stall cycles observed | **210** |
 
-### Merged code coverage
+The same-bank MSHR-full test reaches **8 outstanding refills** and stalls a ninth request. The four-bank pressure test reaches **32 aggregate outstanding refills**.
 
-Coverage is reported separately for the cache RTL so unrelated Vortex library/generic code does not dilute the DUT metric.
+## Merged coverage
+
+Coverage is reported for the cache RTL separately from generic Vortex infrastructure and UVM code.
 
 | Metric | Vortex cache RTL scope |
 |---|---:|
 | Line | **94.6%** (87 / 92) |
 | Branch | **84.7%** (461 / 544) |
-| Expression | **83.9%** (1971 / 2348) |
-| Toggle | **61.0%** (23775 / 38962) |
+| Expression | **84.1%** (1974 / 2348) |
+| Toggle | **61.0%** (23779 / 38962) |
 
-### Functional coverage
+Reachable functional coverage is **100% (52 / 52 bins)**. Two raw memory-response-stall bins are classified unreachable in the current standalone configuration because the cache-side response queue keeps the external response-ready path asserted for the exercised patterns.
 
-The reachable functional coverage model reached **100% (52 / 52 bins)** in the scoped report. The raw global summary reports 52/54 because two memory-response-stall bins are intentionally classified as unreachable at this interface/configuration: the cache-side response queue keeps `mem_rsp_ready` asserted for the response patterns used by this standalone configuration.
+Toggle coverage is intentionally not presented as an overall quality score; many untouched toggles are width/state-space activity rather than missing functional scenarios.
 
-The project therefore does **not** quote a fabricated 90%+ overall Verilator coverage number. The meaningful DUT metrics above are kept separate from generic Vortex support RTL and UVM infrastructure.
+## Historical mutation evidence
 
-## Verification hardening
+Run #81 also performs two negative-control checks against known upstream Vortex fixes.
 
-After the baseline regression was green, historical upstream Vortex cache defects were converted into mutation tests. The mutation flow deliberately reintroduces an old RTL defect and requires a directed test/checker to fail for the mutation to be considered killed.
+### Flush/pipeline race — a686ceec
 
-Current mutation targets:
+The script reintroduces the old `mshr_empty`-only guard. The mutant compiles, then the bound assertion detects:
 
-1. flush beginning before the bank pipeline is fully drained;
-2. MSHR allocation coalescing onto an entry being released in the same cycle.
+```text
+FLUSH_RACE: flush left WAIT1 while bank pipeline/request queue was not empty
+```
 
-These mutation checks are intentionally stricter than the ordinary green regression and are used to improve the quality of the directed corner cases. A mutation is not counted as detected merely because compilation fails; the checker/assertion must expose a functional failure.
+Result: **mutation killed**.
+
+### MSHR release/coalesce race — 35e85f6
+
+The script removes the same-cycle release exclusion from `addr_matches`. The mutant compiles, then the bound assertion detects:
+
+```text
+MSHR_RELEASE_COALESCE: allocation linked behind an entry released in the same cycle
+```
+
+Result: **mutation killed**.
+
+Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/36678971383

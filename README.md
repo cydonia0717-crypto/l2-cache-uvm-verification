@@ -1,70 +1,91 @@
 # Non-blocking L2 Cache UVM Verification
 
-A portfolio-grade digital IC verification project using the open-source Vortex cache RTL as DUT and a newly built SystemVerilog/UVM testbench.
+Portfolio-grade digital-IC verification project using the open-source Vortex cache RTL as DUT and an independently built SystemVerilog/UVM verification environment.
 
 ## DUT configuration
 
-- 256 KiB, 4-way, 64-byte line
-- 4 banks, 2 upstream request ports
-- 64-bit word access
-- 8-entry MSHR per bank
+- 256 KiB, 4-way set associative, 64-byte cache line
+- 4 banks, 2 upstream request ports, 64-bit word interface
+- 8-entry MSHR **per bank** (32 aggregate across four banks)
 - write-back + write-allocate
-- pseudo-LRU
-- tagged memory refill interface with response reordering support
+- pseudo-LRU replacement
+- tagged refill interface that supports multiple outstanding misses and response reordering
+- single clock domain
+- normal regression bank latency: 2 cycles; targeted flush-race mutation stress also exercises latency 4
 
-## Why this project
+The Vortex RTL is pinned to commit `a4afb2351f4b4464a53779874616d95571c376d0`.
 
-The project is designed around CPU/NPU/SoC memory-subsystem verification topics that are commonly difficult in real designs: MSHR pressure, concurrent misses, same-line dependencies, refill routing, dirty eviction, replacement and multi-layer backpressure.
+## Verification environment
+
+The testbench contains:
+
+- two active core-side UVM agents;
+- a reactive memory agent/model with randomized request backpressure, read latency and out-of-order refill;
+- an architectural-memory scoreboard that correlates responses by port/tag and checks dirty writeback data byte by byte;
+- functional coverage for operation, ports, address/set/bank classes, outstanding depth, same-line concurrency, reorder and stall events;
+- boundary protocol SVA plus white-box invariants for cache-flush and MSHR lifetime hazards;
+- Verilator CI and a VCS/Verdi-oriented run script.
+
+## Verified regression status
+
+GitHub Actions **run #81** completed successfully on the open-source Verilator/UVM flow.
+
+The green run executed **27 unique functional/stress test classes**, then five additional random seeds, and finally two historical-bug mutation checks. Across the 32 unmutated simulation runs:
+
+- **0 UVM_ERROR / 0 UVM_FATAL**
+- **1,234** core-read data checks
+- **871** observed refill requests
+- **14** dirty writebacks
+- **2** completed whole-cache flush operations
+- **8** simultaneous refills in the same-bank MSHR-full scenario
+- **32** simultaneous refills across all four banks in global pressure
+- request, response and memory-request backpressure were all observed
+
+Measured merged coverage for the **Vortex cache RTL scope**:
+
+| Metric | Result |
+|---|---:|
+| Line | **94.6%** (87 / 92) |
+| Branch | **84.7%** (461 / 544) |
+| Expression | **84.1%** (1974 / 2348) |
+| Toggle | **61.0%** (23779 / 38962) |
+| Reachable functional bins | **100%** (52 / 52) |
+
+The raw functional model has two additional memory-response-stall bins that are classified unreachable for this standalone interface/configuration; they are not counted as reachable closure targets.
+
+Run evidence: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/36678971383
+
+## Historical bug mutation proof
+
+Two documented upstream Vortex fixes are used as mutation targets. The scripts temporarily restore the pre-fix RTL behavior, rebuild it, and require the verification environment to detect the defect.
+
+1. **Flush/pipeline race — Vortex a686ceec**  
+   A white-box SVA checks that the flush controller cannot leave `STATE_WAIT1` while the bank pipeline/request queue is still non-empty. Run #81 killed the mutant with `FLUSH_RACE`.
+
+2. **MSHR release/coalesce race — Vortex 35e85f6**  
+   A white-box SVA checks that a new MSHR allocation never links behind an entry being released in the same cycle. Run #81 killed the mutant with `MSHR_RELEASE_COALESCE`.
+
+These are mutation reproductions of known upstream defects, **not** claims of original bug discovery or RTL authorship.
 
 ## Simulation
 
-Primary flow: Linux + Synopsys VCS/Verdi + UVM 1.2.
+Primary industry-oriented flow:
 
-Open-source CI flow: Verilator v5.052 + Verilator-compatible UVM + pinned Vortex RTL.
+```bash
+./scripts/setup_vortex.sh
+TEST=l2_smoke_test SEED=1 ./scripts/run_vcs.sh
+```
+
+Open-source reproducible flow:
 
 ```bash
 ./scripts/bootstrap_oss.sh
 source .env.oss
-TEST=l2_smoke_test SEED=1 ./scripts/run_verilator.sh
+TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
 ```
-
-Vortex is pinned to commit `a4afb2351f4b4464a53779874616d95571c376d0`.
-
-## Verified regression status
-
-GitHub Actions run #45 completed **19 / 19 tests PASS** with **0 UVM_ERROR / 0 UVM_FATAL**. The verified baseline accumulated **283 core-read data checks**, observed **259 refill requests**, **5 dirty writebacks**, and reached **32 simultaneous memory-side outstanding refills** in the four-bank global-MSHR pressure test.
-
-See [docs/Regression_Report.md](docs/Regression_Report.md) for the per-test evidence. No final functional/code coverage percentage is claimed yet; coverage closure remains a separate task.
-
-## Current verification scope
-
-Implemented first-wave tests include:
-
-- smoke: cold miss / hit / full write / partial write
-- MSHR full pressure: 9 same-bank misses against 8 entries per bank
-- out-of-order refill
-- same-line concurrent miss
-- dirty eviction
-- dual-port constrained-random stress
-- request and response backpressure
-
-The TB contains two active core agents, a reactive memory responder, scoreboard, functional coverage and boundary SVA.
 
 ## Authorship / provenance
 
-The Vortex cache RTL is open-source Apache-2.0 code and is **not** claimed as student-authored RTL.
+The cache RTL is open-source Apache-2.0 Vortex code. The portfolio contribution is the DUT configuration/wrapper, vPlan, UVM environment, agents, memory model, scoreboard, assertions, functional coverage, testcase design, regression/coverage infrastructure, mutation verification and debug/closure work.
 
-The portfolio contribution is the verification plan, DUT configuration/wrapper, UVM environment, agents, memory model, scoreboard, assertions, coverage, testcase design, regression infrastructure and debug/closure work.
-
-Do not quote a final coverage percentage until it has been measured by a real regression.
-
-See `docs/Verification_Plan.md`, `docs/TB_Architecture.md`, and `docs/Interview_Notes.md`.
-
-
-## Measured regression status
-
-A green GitHub Actions regression has been completed on the open-source flow. The cache-RTL scoped merged coverage from run #70 was **94.6% line, 84.7% branch, 83.9% expression and 61.0% toggle**, with **100% of reachable functional-coverage bins (52/52)** hit.
-
-The regression has also demonstrated an **8-entry same-bank MSHR saturation/backpressure case** and up to **32 concurrent memory refills across four banks**. See `docs/Regression_Evidence.md` for the measured evidence and the distinction between DUT coverage and unrelated generic Vortex support code.
-
-Historical upstream cache bugs are additionally being used as mutation targets so the project can demonstrate that its corner-case tests detect real classes of cache-control defects rather than only achieving coverage.
+See `docs/Verification_Plan.md`, `docs/TB_Architecture.md`, `docs/Regression_Report.md`, `docs/Regression_Evidence.md` and `docs/Interview_Notes.md`.
