@@ -24,6 +24,7 @@ tests=(
   "l2_byteen_sweep_test:26"
   "l2_flush_pipeline_race_test:27"
   "l2_plru_victim_test:28"
+  "l2_release_coalesce_race_test:29"
 )
 
 for spec in "${tests[@]}"; do
