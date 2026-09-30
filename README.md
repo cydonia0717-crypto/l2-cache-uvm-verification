@@ -59,3 +59,12 @@ The portfolio contribution is the verification plan, DUT configuration/wrapper, 
 Do not quote a final coverage percentage until it has been measured by a real regression.
 
 See `docs/Verification_Plan.md`, `docs/TB_Architecture.md`, and `docs/Interview_Notes.md`.
+
+
+## Measured regression status
+
+A green GitHub Actions regression has been completed on the open-source flow. The cache-RTL scoped merged coverage from run #70 was **94.6% line, 84.7% branch, 83.9% expression and 61.0% toggle**, with **100% of reachable functional-coverage bins (52/52)** hit.
+
+The regression has also demonstrated an **8-entry same-bank MSHR saturation/backpressure case** and up to **32 concurrent memory refills across four banks**. See `docs/Regression_Evidence.md` for the measured evidence and the distinction between DUT coverage and unrelated generic Vortex support code.
+
+Historical upstream cache bugs are additionally being used as mutation targets so the project can demonstrate that its corner-case tests detect real classes of cache-control defects rather than only achieving coverage.
