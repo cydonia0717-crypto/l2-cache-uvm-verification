@@ -33,7 +33,9 @@ class l2_coverage extends uvm_component;
     option.per_instance=1;
     cp_kind: coverpoint kind { bins req={MEM_REQ}; bins req_stall={MEM_REQ_STALL}; bins rsp={MEM_RSP}; bins rsp_stall={MEM_RSP_STALL}; }
     cp_rw: coverpoint rw iff(kind==MEM_REQ) { bins refill={0}; bins writeback={1}; }
-    cp_line_align: coverpoint addr[5:0] iff(kind==MEM_REQ) { bins aligned={0}; illegal_bins bad=default; }
+    // Misaligned downstream requests are a protocol failure, not a coverage
+    // target.  Alignment is enforced independently by SVA.
+    cp_line_align: coverpoint addr[5:0] iff(kind==MEM_REQ) { bins aligned={0}; ignore_bins bad=default; }
     cp_bank: coverpoint addr[7:6] iff(kind==MEM_REQ) { bins b0={0}; bins b1={1}; bins b2={2}; bins b3={3}; }
     cp_outstanding_depth: coverpoint depth {
       bins zero={0}; bins one={1}; bins low={[2:4]}; bins high={[5:7]}; bins full_or_more={[8:32]};
@@ -71,10 +73,6 @@ class l2_coverage extends uvm_component;
       end
       read_line_by_key.delete(k);
     end
-    // Vortex initializes cache metadata after reset while the first request may
-    // already be held valid.  Do not classify that one-time bring-up latency as
-    // resource/backpressure coverage.  Runtime stall accounting starts only
-    // after this port has completed its first request handshake.
     if (o.kind==CORE_REQ) core_traffic_started[o.port_id]=1'b1;
     if (o.kind==CORE_REQ_STALL && core_traffic_started[o.port_id]) core_req_stall_count++;
     if (o.kind==CORE_RSP_STALL) core_rsp_stall_count++;

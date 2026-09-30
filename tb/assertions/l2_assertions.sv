@@ -26,4 +26,10 @@ module l2_mem_assertions(l2_mem_if vif);
       vif.rsp_valid && !vif.rsp_ready |=> vif.rsp_valid && $stable({vif.rsp_data,vif.rsp_tag});
   endproperty
   a_mem_rsp_hold: assert property(p_mem_rsp_hold);
+
+  property p_mem_req_line_aligned;
+    @(posedge vif.clk) disable iff(vif.reset)
+      vif.req_valid && vif.req_ready |-> vif.req_addr[5:0] == 6'b0;
+  endproperty
+  a_mem_req_line_aligned: assert property(p_mem_req_line_aligned);
 endmodule

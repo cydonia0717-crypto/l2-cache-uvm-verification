@@ -24,6 +24,7 @@ fi
 "${VCOV[@]}" --write "$OUT/merged.dat" "${COV_FILES[@]}"
 "${VCOV[@]}" --write-info "$OUT/merged.info" "$OUT/merged.dat"
 "${VCOV[@]}" --report summary "$OUT/merged.dat" | tee "$OUT/summary.txt"
+python3 "$ROOT/scripts/coverage_scope_report.py" "$OUT/merged.dat" "$OUT/scope_summary.txt"
 
 echo "coverage outputs:"
 ls -lh "$OUT"

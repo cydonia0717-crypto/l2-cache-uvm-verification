@@ -18,6 +18,8 @@ tests=(
   "l2_writeback_backpressure_test:20"
   "l2_refill_writeback_overlap_test:21"
   "l2_flush_test:22"
+  "l2_set_slice_sweep_test:23"
+  "l2_mem_rsp_backpressure_test:24"
 )
 
 for spec in "${tests[@]}"; do

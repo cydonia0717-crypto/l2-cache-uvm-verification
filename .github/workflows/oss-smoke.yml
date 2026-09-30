@@ -91,5 +91,6 @@ jobs:
             out/verilator/coverage/merged.dat
             out/verilator/coverage/merged.info
             out/verilator/coverage/summary.txt
+            out/verilator/coverage/scope_summary.txt
           if-no-files-found: warn
           retention-days: 30
