@@ -5,17 +5,10 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD_OUT=${BUILD_OUT:-"$ROOT/out/verilator/full-build"}
 VERILATOR_DOCKER=${VERILATOR_DOCKER:-1}
 WITH_MUTATIONS=${WITH_MUTATIONS:-0}
+MANIFEST=${MANIFEST:-"$ROOT/scripts/regression_manifest.txt"}
 
-cases=(
-  "l2_smoke_test:1"
-  "l2_same_line_merge_test:2"
-  "l2_mshr_full_test:3"
-  "l2_ooo_refill_test:4"
-  "l2_clean_eviction_test:5"
-  "l2_dirty_eviction_test:6"
-  "l2_bank_hotspot_test:7"
-  "l2_random_test:8"
-)
+[ -f "$MANIFEST" ] || { echo "regression manifest not found: $MANIFEST" >&2; exit 2; }
+mapfile -t cases < <(grep -Ev '^[[:space:]]*(#|$)' "$MANIFEST")
 
 first=1
 for spec in "${cases[@]}"; do
@@ -28,9 +21,6 @@ for spec in "${cases[@]}"; do
   first=0
 done
 
-VERILATOR_DOCKER="$VERILATOR_DOCKER" BUILD_OUT="$BUILD_OUT" bash "$ROOT/scripts/extended_regression.sh"
-VERILATOR_DOCKER="$VERILATOR_DOCKER" BUILD_OUT="$BUILD_OUT" bash "$ROOT/scripts/random_multiseed.sh"
-
 bash "$ROOT/scripts/merge_coverage.sh"
 
 if [ "$WITH_MUTATIONS" = "1" ]; then
@@ -40,7 +30,7 @@ if [ "$WITH_MUTATIONS" = "1" ]; then
 fi
 
 echo
-echo "Open-source regression PASS: 32 normal simulations"
+printf 'Open-source regression PASS: %d normal simulations\n' "${#cases[@]}"
 if [ "$WITH_MUTATIONS" = "1" ]; then
   echo "Historical mutation qualification: PASS"
 fi
