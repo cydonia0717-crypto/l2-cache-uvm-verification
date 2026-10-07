@@ -67,6 +67,25 @@ Two documented upstream Vortex fixes are used as mutation targets. The scripts t
 
 These are mutation reproductions of known upstream defects, **not** claims of original bug discovery or RTL authorship.
 
+## Quick commands
+
+```bash
+make setup
+make check
+make smoke
+make run TEST=l2_mshr_full_test SEED=3
+make regression
+make coverage
+```
+
+For a licensed Synopsys environment:
+
+```bash
+make vcs-smoke
+make vcs-regression
+make verdi
+```
+
 ## Simulation
 
 Primary industry-oriented flow:
@@ -88,4 +107,15 @@ TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
 
 The cache RTL is open-source Apache-2.0 Vortex code. The portfolio contribution is the DUT configuration/wrapper, vPlan, UVM environment, agents, memory model, scoreboard, assertions, functional coverage, testcase design, regression/coverage infrastructure, mutation verification and debug/closure work.
 
-See `docs/Verification_Plan.md`, `docs/TB_Architecture.md`, `docs/Regression_Report.md`, `docs/Regression_Evidence.md`, `docs/Debug_Report.md`, `docs/Interview_Notes.md`, and `docs/Resume_Project_Description_CN.md`.
+Recommended reading:
+
+- `docs/Project_Status.md` — current measured baseline and claim boundary
+- `docs/Verification_Plan.md` — verification objectives and closure criteria
+- `docs/TB_Architecture.md` — UVM structure and checking strategy
+- `docs/Address_Mapping_and_Tagging.md` — exact bank/set/tag/refill-tag mapping
+- `docs/Regression_Report.md` / `docs/Regression_Evidence.md` — measured run evidence
+- `docs/Debug_Report.md` — mutation/debug cases
+- `docs/VCS_Verdi_Guide.md` — commercial-simulator bring-up
+- `docs/Interview_Notes.md` / `docs/Interview_Deep_Dive_CN.md` — interview wording and deep-dive Q&A
+- `docs/Study_Guide_CN.md` — suggested code-reading order
+- `docs/Resume_Project_Description_CN.md` — resume-ready Chinese wording
