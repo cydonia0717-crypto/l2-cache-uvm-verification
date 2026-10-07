@@ -26,6 +26,8 @@ Full VCS regression:
 bash scripts/vcs_regression.sh
 ```
 
+Both `scripts/vcs_regression.sh` and `scripts/oss_regression.sh` consume the same canonical test/seed list from `scripts/regression_manifest.txt`, preventing the commercial and open-source full-suite definitions from drifting apart.
+
 The regression script executes the same 27 functional/stress tests plus five additional random seeds. If `urg` is available, it also merges the generated `simv.vdb` databases into `out/vcs/urg_report`.
 
 VCS and Verdi are commercial licensed tools and are not bundled in this repository. The VCS scripts have been shell/static reviewed, but this public project does **not** claim a measured VCS/URG result because the ChatGPT execution environment does not contain a Synopsys license.
@@ -48,5 +50,14 @@ TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
 ```
 
 GitHub Actions run #81 is the current measured baseline. It completes the functional/stress suite, additional random seeds, coverage merge and two historical-bug mutation checks.
+
+For a local one-command open-source run after bootstrap:
+
+```bash
+source .env.oss
+VERILATOR_DOCKER=0 bash scripts/oss_regression.sh
+```
+
+Or use `make regression`; `make qualification` also executes the two mutation checks.
 
 The Verilator flow is the reproducible CI evidence path, while VCS/Verdi remains the intended commercial-simulator/debug flow.
