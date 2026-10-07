@@ -30,65 +30,11 @@ jobs:
       - name: Static project checks
         run: python3 scripts/check_project.py
 
-      - name: Compile + smoke
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 FORCE_REBUILD=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
-
-      - name: Same-line pending miss
+      - name: Normal 32-run regression + coverage
         run: |
           source .env.oss
           VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_same_line_merge_test SEED=2 bash scripts/run_verilator.sh
-
-      - name: MSHR full pressure
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_mshr_full_test SEED=3 bash scripts/run_verilator.sh
-
-      - name: Out-of-order refill
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_ooo_refill_test SEED=4 bash scripts/run_verilator.sh
-
-      - name: Clean eviction
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_clean_eviction_test SEED=5 bash scripts/run_verilator.sh
-
-      - name: Dirty eviction
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_dirty_eviction_test SEED=6 bash scripts/run_verilator.sh
-
-      - name: Bank hotspot
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_bank_hotspot_test SEED=7 bash scripts/run_verilator.sh
-
-      - name: Random stress
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            TEST=l2_random_test SEED=8 bash scripts/run_verilator.sh
-
-      - name: Extended directed regression
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            bash scripts/extended_regression.sh
-
-      - name: Multi-seed random regression
-        run: |
-          source .env.oss
-          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
-            bash scripts/random_multiseed.sh
+            bash scripts/oss_regression.sh
 
       - name: Historical flush-race mutation
         run: |
@@ -99,10 +45,6 @@ jobs:
         run: |
           source .env.oss
           VERILATOR_DOCKER=1 bash scripts/repro_historical_mshr_release_bug.sh
-
-      - name: Merge coverage
-        if: always()
-        run: bash scripts/merge_coverage.sh
 
       - name: Upload regression evidence
         if: always()

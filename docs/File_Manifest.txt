@@ -17,6 +17,7 @@ docs/Interview_Notes.md
 docs/Project_Status.md
 docs/Regression_Evidence.md
 docs/Regression_Report.md
+docs/Release_Checklist.md
 docs/Resume_Project_Description_CN.md
 docs/Simulation_Environment.md
 docs/Source_Provenance.md
@@ -32,8 +33,10 @@ scripts/coverage_scope_report.py
 scripts/extended_regression.sh
 scripts/merge_coverage.sh
 scripts/open_verdi.sh
+scripts/oss_regression.sh
 scripts/random_multiseed.sh
 scripts/regression.py
+scripts/regression_manifest.txt
 scripts/repro_historical_flush_bug.sh
 scripts/repro_historical_mshr_release_bug.sh
 scripts/run.sh
