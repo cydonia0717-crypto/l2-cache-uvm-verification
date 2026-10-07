@@ -4,7 +4,7 @@ TEST ?= l2_smoke_test
 SEED ?= 1
 BANK_LATENCY ?= 2
 
-.PHONY: help setup check smoke run regression coverage vcs-smoke vcs-regression verdi clean
+.PHONY: help setup check smoke run regression qualification coverage vcs-smoke vcs-regression verdi clean
 
 help:
 	@echo "Targets:"
@@ -12,7 +12,8 @@ help:
 	@echo "  make check          - static project consistency checks"
 	@echo "  make smoke          - run l2_smoke_test with auto-selected simulator"
 	@echo "  make run TEST=...   - run one test"
-	@echo "  make regression     - open-source directed + random regression"
+	@echo "  make regression     - run all 32 normal OSS simulations + coverage"
+	@echo "  make qualification  - regression + both historical mutation checks"
 	@echo "  make coverage       - merge Verilator coverage databases"
 	@echo "  make vcs-smoke      - run smoke with VCS/UVM 1.2"
 	@echo "  make vcs-regression - run full VCS regression and URG when available"
@@ -32,8 +33,10 @@ run:
 	SIM=$(SIM) TEST=$(TEST) SEED=$(SEED) BANK_LATENCY=$(BANK_LATENCY) bash scripts/run.sh
 
 regression:
-	bash scripts/extended_regression.sh
-	bash scripts/random_multiseed.sh
+	bash scripts/oss_regression.sh
+
+qualification:
+	WITH_MUTATIONS=1 bash scripts/oss_regression.sh
 
 coverage:
 	bash scripts/merge_coverage.sh
