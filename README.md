@@ -75,6 +75,7 @@ make check
 make smoke
 make run TEST=l2_mshr_full_test SEED=3
 make regression
+make qualification
 make coverage
 ```
 
@@ -98,10 +99,13 @@ TEST=l2_smoke_test SEED=1 ./scripts/run_vcs.sh
 Open-source reproducible flow:
 
 ```bash
-./scripts/bootstrap_oss.sh
-source .env.oss
-TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
+make setup
+make smoke
+make regression        # 32 normal simulations + coverage
+make qualification     # normal suite + two historical mutation checks
 ```
+
+The canonical 32-run list is stored in `scripts/regression_manifest.txt` and is shared by the one-command open-source and VCS regression wrappers.
 
 ## Authorship / provenance
 
