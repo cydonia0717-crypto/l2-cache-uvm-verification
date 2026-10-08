@@ -2,8 +2,8 @@
 
 ## Release-quality baseline
 
-Reproducible qualified PR run: **#91**, commit
-`41fa0d7dcdc98e2b1f530a9b4aac67d11496f113`.
+Reproducible qualified PR run: **#95**, commit
+`cc7a6c60d70c3daaf11345d89e4b7dff8089afdf`.
 Result: **PASS**, including both historical mutation checks.
 
 Normal regression:
@@ -11,6 +11,7 @@ Normal regression:
 - 29 unique directed/stress test classes + 5 additional random seeds
 - 34 unmutated simulations, 0 UVM_ERROR / 0 UVM_FATAL
 - 1,254 core-read checks; 895 refill requests
+- 891 independently checked 512-bit refill response payloads; 4 additional refills were aborted by reset
 - 14 dirty writebacks; 2 whole-cache flush completions
 - 8 same-bank / 32 aggregate outstanding miss pressure observed
 - 8 legal retired memory-tag reuses verified in MSHR reuse case
@@ -29,8 +30,9 @@ Mutation evidence:
 
 - historical flush/pipeline mutation killed by SVA
 - historical MSHR release/coalesce mutation killed by SVA
+- injected single-bit refill payload corruption killed by `SB_MEM_DATA`, **while Core readback was still correct**
 
-Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
+Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37765145449
 
 ## Measured vs prepared
 
