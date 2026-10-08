@@ -78,7 +78,7 @@ Core driver 的 rsp_ready 可以按配置随机拉低。若 DUT rsp_valid 已经
 
 在当前 standalone 配置和所覆盖的 response traffic 下，Cache 内部 response queue 让外部 mem_rsp_ready 持续可接受，没有形成 externally observable response stall。这个不是“忘了覆盖”，而是经过 targeted testcase 后确认当前配置下该 raw bin 不可达，所以从 reachable functional coverage denominator 中排除，同时保留 bin 作为文档。
 
-## 20. 52/52 Functional Coverage 是怎么理解的？
+## 20. 55/55 Functional Coverage 是怎么理解的？
 
 这是当前 vPlan 对应的 **reachable bins**，不是说所有可能状态空间都 100%。模型覆盖 operation、port、bank/set slice、outstanding depth、same-line pending、OOO、request/response stall 等。两个当前配置不可达的 mem_rsp_stall raw bins 被单独分类，不放进 52 个 closure target。
 
@@ -124,7 +124,7 @@ Vortex 上游曾修复过一个控制问题：Flush FSM 不能只等 MSHR empty�
 
 ## 31. 如果让你继续扩展，下一步是什么？
 
-第一优先级不是继续堆普通 testcase，而是在有 VCS/Verdi license 的环境跑完整 32-run suite，确认商业仿真器兼容性和 URG coverage，并对 MSHR full、dirty eviction、mutation case 做波形 review。功能方向如果继续扩展，会考虑多 sector line、AMO 或 coherence，但这些应该作为独立 scope，不会在当前简历里假装已经完成。
+第一优先级不是继续堆普通 testcase，而是在有 VCS/Verdi license 的环境跑完整 34-run suite，确认商业仿真器兼容性和 URG coverage，并对 MSHR full、dirty eviction、mutation case 做波形 review。功能方向如果继续扩展，会考虑多 sector line、AMO 或 coherence，但这些应该作为独立 scope，不会在当前简历里假装已经完成。
 
 ## 32. 你这个项目和真实公司验证工作的相似点在哪里？
 
@@ -132,7 +132,7 @@ Vortex 上游曾修复过一个控制问题：Flush FSM 不能只等 MSHR empty�
 
 ## 33. 你自己真正写了什么？
 
-开源 RTL 本身不是我写的。我做的是 DUT standalone wrapper 和参数配置、Core/Memory UVM Agent、reactive memory model、architectural scoreboard、functional coverage、SVA、27 类 testcase、多 seed regression、CI/coverage scripts、mutation verification 和最终 closure/debug 文档。
+开源 RTL 本身不是我写的。我做的是 DUT standalone wrapper 和参数配置、Core/Memory UVM Agent、reactive memory model、architectural scoreboard、functional coverage、SVA、29 类 testcase、多 seed regression、CI/coverage scripts、mutation verification 和最终 closure/debug 文档。
 
 ## 34. 为什么 Memory Side 没强行改成 AXI？
 
@@ -141,3 +141,20 @@ Vortex 上游曾修复过一个控制问题：Flush FSM 不能只等 MSHR empty�
 ## 35. 面试官问“项目里你发现了几个 bug”怎么回答？
 
 不要说“我发现了 Vortex 两个 bug”。更准确的回答是：正常 regression 中我完成了 checker/assertion/coverage closure；另外我选了 Vortex 上游两个已公开修复的历史控制缺陷做 mutation target，重新注入旧行为，验证我搭的环境能稳定检测 Flush quiescence race 和 MSHR release/coalesce lifetime hazard。这两个属于 verification capability proof，不是原创 bug discovery。
+
+
+## 36. Memory Refill Tag 的生命周期怎么检查？
+
+Memory Monitor 在 MemRd 真正握手时，把 Memory Tag 和 Line 地址放进 Outstanding Table；如果 Tag 还在表里又来了新请求，就报 active-tag alias。响应回来用 Tag 查表并删除，未知或重复的 Completion 也会报错。MSHR Reuse 定向用例里实际观察到了 8 次释放后合法复用，收尾时还要求 Outstanding Table 为空。
+
+## 37. Cache 运行中 Reset 怎么验证？
+
+我先让 4 笔不同 Line 的 Miss 进入 MSHR，Memory Model 把 Refill 延迟到 Reset 之后，确认复位时有 4 个真实在途上下文。Reset 后 Scoreboard 清掉旧 Core Read 和 Memory Tag context，Memory Agent 丢掉尚未返回的旧 Refill，再用相同 Core Tag 发 4 笔新读，数据全部通过。这个场景只涉及干净的 Read Miss，不声称复位自动写回 Dirty Line。
+
+## 38. 两个 Core Port 同时写同一个 Word，怎么确定结果？
+
+我用互不重叠的 Byte Enable：Port 0 写低四字节，Port 1 写高四字节，这样无论内部先仲裁哪个 Port，最后 64-bit 数据都有唯一预期值。覆盖了四个 Bank 共 16 组同字写入，Monitor 实际确认两边都握手，然后读回逐字节比较。这避免了两个 Port 覆盖相同字节时无明确排序带来的错误 Oracle。
+
+## 39. 新增三组验证后，覆盖率怎么变化？
+
+GitHub Actions PR Run #91 有 29 类定向/压力用例加 5 个额外 Seed，共 34 次正常仿真，功能覆盖 55/55；Cache RTL Line 94.6%、Branch 84.7%、Expression 84.4%。说明增加的是针对 Reset、Tag 生命周期及跨端口写合并的验证深度，而不是靠堆随机数去刷 Branch Coverage。
