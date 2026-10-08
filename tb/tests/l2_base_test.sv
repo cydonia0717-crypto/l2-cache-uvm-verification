@@ -3,6 +3,7 @@ class l2_base_test extends uvm_test;
   l2_env env;
   virtual l2_core_if core0_vif, core1_vif;
   virtual l2_mem_if mem_vif;
+  virtual l2_reset_if reset_ctrl_vif;
   l2_core_cfg c0_cfg, c1_cfg;
   l2_mem_cfg m_cfg;
 
@@ -16,6 +17,9 @@ class l2_base_test extends uvm_test;
       `uvm_fatal("CFG","core1_vif not set")
     if (!uvm_config_db#(virtual l2_mem_if)::get(this,"","mem_vif",mem_vif))
       `uvm_fatal("CFG","mem_vif not set")
+
+    if (!uvm_config_db#(virtual l2_reset_if)::get(this,"","reset_ctrl_vif",reset_ctrl_vif))
+      `uvm_fatal("CFG","reset_ctrl_vif not set")
 
     c0_cfg=l2_core_cfg::type_id::create("c0_cfg"); c0_cfg.vif=core0_vif; c0_cfg.port_id=0;
     c1_cfg=l2_core_cfg::type_id::create("c1_cfg"); c1_cfg.vif=core1_vif; c1_cfg.port_id=1;
