@@ -14,6 +14,8 @@ class l2_coverage extends uvm_component;
   bit [L2_NUM_PORTS-1:0] core_traffic_started;
   bit [L2_NUM_BANKS-1:0] seen_mem_banks;
   bit [L2_MEM_TAG_W-1:0] mem_read_order[$];
+  bit refill_tag_seen[bit [L2_MEM_TAG_W-1:0]];
+  virtual l2_core_if reset_vif;
   longint unsigned read_line_by_key[longint unsigned];
   int unsigned line_pending[longint unsigned];
 
@@ -43,9 +45,38 @@ class l2_coverage extends uvm_component;
     cp_reordered_rsp: coverpoint reordered iff(kind==MEM_RSP) { bins in_order={0}; bins out_of_order={1}; }
   endgroup
 
+  covergroup tag_lifecycle_cg with function sample(bit reused);
+    option.per_instance=1;
+    cp_tag_lifecycle: coverpoint reused {
+      bins first_allocation={0};
+      bins reuse_after_retirement={1};
+    }
+  endgroup
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    if (!uvm_config_db#(virtual l2_core_if)::get(this,"","reset_vif",reset_vif))
+      `uvm_fatal("COV","missing reset_vif")
+  endfunction
+
+  task run_phase(uvm_phase phase);
+    bit reset_prev=1'b1;
+    forever begin
+      @(posedge reset_vif.clk);
+      if (reset_vif.reset && !reset_prev) begin
+        outstanding_refills=0;
+        mem_read_order.delete();
+        read_line_by_key.delete();
+        line_pending.delete();
+        core_traffic_started='0;
+      end
+      reset_prev=reset_vif.reset;
+    end
+  endtask
+
   function new(string name, uvm_component parent);
     super.new(name,parent); core_imp=new("core_imp",this); mem_imp=new("mem_imp",this);
-    core_cg=new(); mem_cg=new();
+    core_cg=new(); mem_cg=new(); tag_lifecycle_cg=new();
     outstanding_refills=0; max_outstanding_refills=0; saw_ooo_refill=0; saw_same_line_pending=0;
     core_req_stall_count=0; core_rsp_stall_count=0; mem_req_stall_count=0; mem_rsp_stall_count=0;
     core_traffic_started='0; seen_mem_banks='0;
@@ -85,6 +116,8 @@ class l2_coverage extends uvm_component;
     if (o.kind==MEM_RSP_STALL) mem_rsp_stall_count++;
     if (o.kind==MEM_REQ) seen_mem_banks[o.addr[7:6]] = 1'b1;
     if (o.kind==MEM_REQ && !o.rw) begin
+      tag_lifecycle_cg.sample(refill_tag_seen.exists(o.tag));
+      refill_tag_seen[o.tag]=1;
       mem_read_order.push_back(o.tag);
       outstanding_refills++;
       if (outstanding_refills>max_outstanding_refills) max_outstanding_refills=outstanding_refills;

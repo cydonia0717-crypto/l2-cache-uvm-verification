@@ -3,7 +3,7 @@ from pathlib import Path
 import re, sys
 root=Path(__file__).resolve().parents[1]
 required=[
- "rtl/l2_cache_dut_wrapper.sv","tb/l2_uvm_pkg.sv","tb/tb_top.sv",
+ "rtl/l2_cache_dut_wrapper.sv","tb/l2_uvm_pkg.sv","tb/tb_top.sv","tb/if/l2_reset_if.sv",
  "docs/Verification_Plan.md","docs/TB_Architecture.md","docs/Simulation_Environment.md",
  "scripts/run_vcs.sh","scripts/run_verilator.sh","scripts/bootstrap_oss.sh",
  "scripts/oss_regression.sh","scripts/regression_manifest.txt","Makefile",
@@ -34,8 +34,8 @@ manifest_lines=[
     ln.strip() for ln in (root/'scripts/regression_manifest.txt').read_text().splitlines()
     if ln.strip() and not ln.lstrip().startswith('#')
 ]
-if len(manifest_lines) != 32:
-    print(f"Expected 32 normal regression entries, found {len(manifest_lines)}"); sys.exit(1)
+if len(manifest_lines) != 33:
+    print(f"Expected 33 normal regression entries, found {len(manifest_lines)}"); sys.exit(1)
 
 test_names=[]
 for spec in manifest_lines:
@@ -51,8 +51,8 @@ for spec in manifest_lines:
     if inc not in pkg:
         print(f"Regression test not registered in tb/l2_uvm_pkg.sv: {name}"); sys.exit(1)
 
-if len(set(test_names)) != 27:
-    print(f"Expected 27 unique regression test classes, found {len(set(test_names))}"); sys.exit(1)
+if len(set(test_names)) != 28:
+    print(f"Expected 28 unique regression test classes, found {len(set(test_names))}"); sys.exit(1)
 
 # Basic structure sanity: every SV source should have balanced class/module/interface/package pairs.
 for p in root.rglob('*.sv'):

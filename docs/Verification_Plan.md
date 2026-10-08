@@ -24,8 +24,9 @@ The verification target is not merely hit/miss functionality. The main objective
 | F14 | Core response backpressure | random `rsp_ready=0` | response payload stable; no duplicate response | core rsp stall |
 | F15 | Bank conflicts | addresses mapped to same/different banks | progress and data integrity | bank/address cross |
 | F16 | Simultaneous ports | both ports active | no cross-port tag/data corruption | port × op cross |
-| F17 | Reset | reset before traffic and between regressions | no stale response after reset | reset smoke |
+| F17 | Reset recovery | assert reset with four accepted misses still awaiting refill, then reuse core tags | aborted epoch purged; no stale response; fresh readbacks complete | reset abort/recover |
 | F18 | Random stress | constrained read/write traffic | scoreboard clean over long run | aggregate closure |
+| F19 | Memory refill-tag lifecycle | saturate and retire bank-local MSHRs, then reuse tags | no active-tag alias, no unknown/duplicate refill, no leaked outstanding transaction | first allocation vs post-retirement reuse |
 
 ## Closure criteria
 

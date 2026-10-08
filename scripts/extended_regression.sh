@@ -13,6 +13,7 @@ tests=(
   "l2_core_rsp_backpressure_test:15"
   "l2_multi_bank_test:16"
   "l2_mshr_reuse_test:17"
+  "l2_reset_recovery_test:36"
   "l2_line_offsets_test:18"
   "l2_global_mshr_pressure_test:19"
   "l2_writeback_backpressure_test:20"
