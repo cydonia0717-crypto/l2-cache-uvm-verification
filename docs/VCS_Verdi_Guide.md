@@ -37,7 +37,7 @@ A run is treated as failed when the UVM summary contains a non-zero error or fat
 
 Run: `bash scripts/vcs_regression.sh`
 
-This executes the same 27 unique functional/stress tests plus five additional random seeds used by the measured open-source baseline. If `urg` is available, the per-test coverage databases are merged into `out/vcs/urg_report/`.
+This executes the same 29 unique functional/stress tests plus five additional random seeds used by the measured open-source baseline. If `urg` is available, the per-test coverage databases are merged into `out/vcs/urg_report/`.
 
 Do not quote a VCS/URG coverage percentage on a resume until this flow has actually been run on a licensed machine.
 
