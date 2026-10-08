@@ -43,7 +43,7 @@ if [ "$FORCE_REBUILD" = "1" ] || [ ! -x "$BUILD_OUT/simv" ]; then
     "${INC[@]}" \
     "$VORTEX/hw/rtl/VX_gpu_pkg.sv" \
     "${IF_SRCS[@]}" "${MEM_SRCS[@]}" "${LIB_SRCS[@]}" "${CACHE_SRCS[@]}" \
-    "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv" \
+    "$ROOT/tb/if/l2_core_if.sv" "$ROOT/tb/if/l2_mem_if.sv" "$ROOT/tb/if/l2_reset_if.sv" \
     "$ROOT/rtl/l2_cache_dut_wrapper.sv" \
     "$ROOT/tb/assertions/l2_assertions.sv" \
     "$ROOT/tb/l2_uvm_pkg.sv" "$ROOT/tb/tb_top.sv" \
