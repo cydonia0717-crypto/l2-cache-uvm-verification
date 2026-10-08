@@ -10,6 +10,7 @@
 
 - 基于开源 Vortex Cache RTL 搭建独立 SystemVerilog/UVM 验证环境，配置 256KB、4-way、64B Cache Line、4 Bank、2 个上游请求端口、每 Bank 8-entry MSHR 的 Write-back / Write-allocate L2 Cache；完成 Core Agent、Memory Agent、Reference/Scoreboard、SVA、Functional Coverage 与自动回归框架。
 - 针对 Read/Write Hit/Miss、Dirty/Clean Eviction、PLRU Replacement、Same-line Pending、8-entry 单 Bank MSHR Full、32-entry 全局并发、Out-of-order Refill、Memory/Core Backpressure、Flush 等场景设计 29 类定向/压力用例，并进行 5 组额外随机 Seed 回归；绿色基线 34 次正常仿真均为 0 UVM_ERROR / 0 UVM_FATAL。
+- 新增 Memory-side 完整 Refill 数据校验：维护独立的 DRAM Reference Mirror，按 Memory Tag 保存和检查 512-bit 返回数据；正常回归校验 891 次完整 Refill，0 mismatch。设计单 Bit 数据破坏负向测试，即使 Core 写操作掩盖了错误、读回正确，也能由 `SB_MEM_DATA` 独立检出。
 - 额外闭环 Refill Tag 生命周期与运行中 Reset 恢复：拦截 active tag 重用/未知或重复响应，实测 MSHR 释放后的合法 Tag reuse；在 4 个 Miss 未完成时 Reset，清理旧事务后验证 4 笔新读请求；同时验证 16 组双端口同字节互补写入在四个 Bank 上的逐字节读回。
 - GitHub Actions 实测：Reachable Functional Coverage 100%（55/55），Cache RTL Scoped Coverage 为 Line 94.6%、Branch 84.7%、Expression 84.4%；通过 mutation verification 重新注入 Vortex 两个已公开历史缺陷，使用 white-box SVA 分别捕获 Flush/Bank-pipeline race 与 MSHR release/coalesce lifetime hazard。
 
