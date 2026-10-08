@@ -29,6 +29,7 @@ README.md
 rtl/l2_cache_dut_wrapper.sv
 scripts/bootstrap_oss.sh
 scripts/check_project.py
+scripts/check_mem_refill_checker.sh
 scripts/coverage_scope_report.py
 scripts/extended_regression.sh
 scripts/merge_coverage.sh
