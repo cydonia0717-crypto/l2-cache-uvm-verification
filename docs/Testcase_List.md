@@ -36,7 +36,7 @@ The current regression contains **29 unique functional/stress test classes**, pl
 
 ## Additional random seeds
 
-`l2_random_test` is rerun with seeds 31–35 after the main directed suite. Run #81 completed all five with zero UVM errors/fatals. The new Reset/Tag lifecycle qualification remains pending CI; do not count it in historical Run #81 metrics.
+`l2_random_test` is rerun with seeds 31–35 after the main directed suite. Run #91 passed all five with zero UVM errors/fatals, together with 29 distinct tests, including reset recovery, memory-tag lifetime checks and dual-port partial writes.
 
 ## Mutation checks
 
