@@ -3,7 +3,7 @@ from pathlib import Path
 import re, sys
 root=Path(__file__).resolve().parents[1]
 required=[
- "rtl/l2_cache_dut_wrapper.sv","tb/l2_uvm_pkg.sv","tb/tb_top.sv",
+ "rtl/l2_cache_dut_wrapper.sv","tb/l2_uvm_pkg.sv","tb/tb_top.sv","tb/if/l2_reset_if.sv",
  "docs/Verification_Plan.md","docs/TB_Architecture.md","docs/Simulation_Environment.md",
  "scripts/run_vcs.sh","scripts/run_verilator.sh","scripts/bootstrap_oss.sh",
  "scripts/oss_regression.sh","scripts/regression_manifest.txt","Makefile",
