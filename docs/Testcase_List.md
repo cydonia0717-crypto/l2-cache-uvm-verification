@@ -1,6 +1,6 @@
 # Testcase List
 
-The current regression contains **27 unique functional/stress test classes**, plus five additional seeds of `l2_random_test`. Historical mutation tests are listed separately because they intentionally run defective RTL and are expected to trigger an assertion/checker.
+The current regression contains **28 unique functional/stress test classes**, plus five additional seeds of `l2_random_test`. Historical mutation tests are listed separately because they intentionally run defective RTL and are expected to trigger an assertion/checker.
 
 | Test | Verification intent |
 |---|---|
@@ -18,7 +18,8 @@ The current regression contains **27 unique functional/stress test classes**, pl
 | `l2_mem_backpressure_test` | downstream memory-request backpressure |
 | `l2_core_rsp_backpressure_test` | upstream core-response backpressure |
 | `l2_multi_bank_test` | traffic spanning all four banks |
-| `l2_mshr_reuse_test` | allocate/free/reallocate MSHR entries across batches |
+| `l2_mshr_reuse_test` | allocate/free/reallocate MSHR entries; require legal refill-tag reuse and no active alias |
+| `l2_reset_recovery_test` | reset with four active misses; flush outstanding checker/agent state and prove fresh core-tag reuse |
 | `l2_line_offsets_test` | all eight 64-bit word offsets in a 64-byte line |
 | `l2_global_mshr_pressure_test` | 32 aggregate MSHRs plus 33rd-request backpressure |
 | `l2_writeback_backpressure_test` | dirty eviction while memory request path is throttled |
@@ -34,7 +35,7 @@ The current regression contains **27 unique functional/stress test classes**, pl
 
 ## Additional random seeds
 
-`l2_random_test` is rerun with seeds 31–35 after the main directed suite. Run #81 completed all five with zero UVM errors/fatals.
+`l2_random_test` is rerun with seeds 31–35 after the main directed suite. Run #81 completed all five with zero UVM errors/fatals. The new Reset/Tag lifecycle qualification remains pending CI; do not count it in historical Run #81 metrics.
 
 ## Mutation checks
 
