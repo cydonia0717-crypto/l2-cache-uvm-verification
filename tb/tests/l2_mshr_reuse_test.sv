@@ -21,6 +21,14 @@ class l2_mshr_reuse_test extends l2_base_test;
       `uvm_error("MSHR_REUSE",$sformatf("expected 16 completed reads, got %0d",env.sb.checks))
     if (env.sb.mem_refill_reqs != 16)
       `uvm_error("MSHR_REUSE",$sformatf("expected 16 refills, got %0d",env.sb.mem_refill_reqs))
+    if (env.sb.refill_tag_reuse_count<4)
+      `uvm_error("TAG_LIFECYCLE",$sformatf(
+        "expected at least four retired memory tags to be legally reused; observed %0d",
+        env.sb.refill_tag_reuse_count))
+    else
+      `uvm_info("TAG_LIFECYCLE",$sformatf(
+        "observed %0d legal memory-tag reuses with zero outstanding aliases",
+        env.sb.refill_tag_reuse_count),UVM_LOW)
     phase.drop_objection(this);
   endtask
 endclass
