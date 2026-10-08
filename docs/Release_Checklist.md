@@ -8,10 +8,13 @@
 - [x] Build a reactive memory agent/model with latency, reorder and backpressure.
 - [x] Implement architectural-memory scoreboard and dirty-writeback checking.
 - [x] Add protocol SVA and high-risk internal invariants.
-- [x] Implement 27 unique directed/stress test classes.
+- [x] Implement 29 unique directed/stress test classes.
 - [x] Add five extra constrained-random regression seeds.
 - [x] Reach 8 bank-local and 32 aggregate outstanding misses.
-- [x] Close 52/52 reachable functional bins.
+- [x] Verify memory-side refill-tag lifecycle, active-tag alias rejection and legal reuse.
+- [x] Verify reset with four outstanding clean misses and subsequent read recovery.
+- [x] Verify 16 dual-port byte-disjoint same-word writes with readback across four banks.
+- [x] Close 55/55 reachable functional bins.
 - [x] Measure scoped cache RTL code coverage.
 - [x] Reintroduce and kill two documented historical cache-control defects.
 - [x] Publish measured regression evidence and debug notes.
@@ -27,4 +30,4 @@
 
 ## Resume-ready threshold
 
-The project is already defensible using the public Verilator/UVM run #81. The unchecked items above are simulator/debug-tool portability validation, not missing functional closure.
+The project is already defensible using the public Verilator/UVM PR run #91. The unchecked items above are simulator/debug-tool portability validation, not missing functional closure.
