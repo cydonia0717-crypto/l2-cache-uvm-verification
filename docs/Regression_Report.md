@@ -2,17 +2,17 @@
 
 ## Current verified baseline
 
-- GitHub Actions workflow: `oss-smoke`, run **#81**
-- Commit: `03d0b8f6984e9e1a64a12873bf30d3d3ab07d281`
+- GitHub Actions workflow: `oss-smoke`, run **#91** (PR qualification)
+- Commit: `41fa0d7dcdc98e2b1f530a9b4aac67d11496f113`
 - Result: **PASS**
-- 27 unique functional/stress tests + 5 extra random seeds
-- 32 unmutated simulations with **0 UVM_ERROR / 0 UVM_FATAL**
-- 1,234 core-read data checks
-- 871 refill requests
+- 29 unique functional/stress tests + 5 extra random seeds
+- 34 unmutated simulations with **0 UVM_ERROR / 0 UVM_FATAL**
+- 1,254 core-read data checks
+- 895 refill requests
 - 14 dirty writebacks
 - peak **32** simultaneous memory-side refills
 
-Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/36678971383
+Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
 
 ## Directed test evidence
 
@@ -32,7 +32,9 @@ Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/run
 | `l2_mem_backpressure_test` | 12 checks; 50 memory-request stall cycles |
 | `l2_core_rsp_backpressure_test` | 12 checks; 35 response-stall cycles |
 | `l2_multi_bank_test` | all four banks observed |
-| `l2_mshr_reuse_test` | 16 checks / 16 refills across reuse batches |
+| `l2_mshr_reuse_test` | 16 checks / 16 refills; 8 legal retired tag reuse events |
+| `l2_reset_recovery_test` | 4 core reads and 4 active refills aborted by reset; 4 fresh reads complete |
+| `l2_cross_port_partial_test` | 16 disjoint-byte dual-port write pairs accepted and read back across 4 banks |
 | `l2_line_offsets_test` | all eight words served from one refill |
 | `l2_global_mshr_pressure_test` | **32** outstanding refills; 33rd request backpressured |
 | `l2_writeback_backpressure_test` | dirty writeback under downstream throttle |
@@ -54,9 +56,9 @@ Vortex cache RTL scoped merged coverage:
 
 - line: **94.6%**
 - branch: **84.7%**
-- expression: **84.1%**
-- toggle: **61.0%**
-- reachable functional bins: **52/52 = 100%**
+- expression: **84.4%**
+- toggle: **61.2%**
+- reachable functional bins: **55/55 = 100%**
 
 ## Negative-control / mutation evidence
 
@@ -65,4 +67,4 @@ The regression temporarily reintroduces two documented Vortex historical defects
 - pre-a686ceec flush guard is killed by `a_wait_for_bank_quiescent`;
 - pre-35e85f6 MSHR matcher is killed by `a_no_coalesce_onto_releasing_entry`.
 
-Both mutation steps **PASS** in run #81, meaning the defective RTL compiled and the verification environment detected the intended control violation.
+Both mutation steps **PASS** in run #91, meaning the defective RTL compiled and the verification environment detected the intended control violation.
