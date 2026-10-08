@@ -84,14 +84,14 @@ MSHR Release/Coalesce 要讲清楚：为什么一个正在 release 的 entry 不
 
 只背已经实测的数字：
 
-- 27 类 testcase + 5 extra random seeds
+- 29 类 testcase + 5 extra random seeds
 - 32 次正常仿真，0 UVM_ERROR / 0 UVM_FATAL
 - 8 same-bank outstanding，32 aggregate outstanding
 - 1,234 read checks
 - 871 refills
 - 14 writebacks
-- Reachable functional coverage 52/52
-- Cache RTL Line/Branch/Expression 94.6% / 84.7% / 84.1%
+- Reachable functional coverage 55/55
+- Cache RTL Line/Branch/Expression 94.6% / 84.7% / 84.4%
 
 ## 面试前自测
 
