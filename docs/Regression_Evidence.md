@@ -5,7 +5,7 @@ All values below are taken from actual GitHub Actions logs; they are not estimat
 ## Current green regression
 
 - Workflow: `oss-smoke`
-- Verified PR qualification: **run #91**, commit `41fa0d7dcdc98e2b1f530a9b4aac67d11496f113`
+- Verified PR qualification: **run #95**, commit `cc7a6c60d70c3daaf11345d89e4b7dff8089afdf`
 - Result: **PASS**
 - Simulator: Verilator/UVM open-source CI against pinned Vortex cache RTL
 - 29 unique functional/stress test classes + five additional random seeds
@@ -16,6 +16,9 @@ All values below are taken from actual GitHub Actions logs; they are not estimat
 | Core-read scoreboard checks | **1,254** |
 | UVM scoreboard errors | **0** |
 | Memory-side refill requests | **895** |
+| Completed 512-bit refill payload checks | **891** |
+| Refill payload mismatches in normal tests | **0** |
+| Refill requests deliberately aborted by reset | **4** |
 | Dirty writebacks | **14** |
 | Whole-cache flush completions | **2** |
 | Peak outstanding refills | **32** |
@@ -29,6 +32,20 @@ ninth; the global pressure test reaches **32**. The lifecycle case observes
 core reads / **4** refills, then completes **4** new reads. The dual-port
 test observes **16 byte-disjoint same-word write pairs** across four banks,
 followed by clean readbacks.
+
+## Independent checker negative control
+
+PR run **#95** also performs a corrupted memory refill payload negative
+control. On a full-byte-enable write-allocate miss, the reactive memory model
+flips one bit in the refill line. The independent DRAM image detects
+`SB_MEM_DATA: refill payload mismatch`, and the test verifies that the
+subsequent Core readback remained correct after the write overwrote the
+corrupted byte. **The controlled bad simulation must fail**, while the CI
+qualification stage must pass by recognizing the expected failure.
+
+The two historical Vortex RTL mutation tests remain independent gates. The
+refill corruption is a **testbench checker qualification**, not an original
+RTL bug discovery.
 
 ## Merged coverage
 
@@ -67,4 +84,4 @@ MSHR_RELEASE_COALESCE: allocation linked behind an entry released in the same cy
 
 Result: **mutation killed**.
 
-Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
+Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37765145449
