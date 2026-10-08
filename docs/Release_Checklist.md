@@ -7,6 +7,7 @@
 - [x] Build two active core-side UVM agents.
 - [x] Build a reactive memory agent/model with latency, reorder and backpressure.
 - [x] Implement architectural-memory scoreboard and dirty-writeback checking.
+- [x] Check each completed 512-bit memory refill against independent DRAM mirror; validate with masked single-bit corruption negative control.
 - [x] Add protocol SVA and high-risk internal invariants.
 - [x] Implement 29 unique directed/stress test classes.
 - [x] Add five extra constrained-random regression seeds.
