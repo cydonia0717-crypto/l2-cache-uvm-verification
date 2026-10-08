@@ -158,3 +158,11 @@ Memory Monitor 在 MemRd 真正握手时，把 Memory Tag 和 Line 地址放进 
 ## 39. 新增三组验证后，覆盖率怎么变化？
 
 GitHub Actions PR Run #91 有 29 类定向/压力用例加 5 个额外 Seed，共 34 次正常仿真，功能覆盖 55/55；Cache RTL Line 94.6%、Branch 84.7%、Expression 84.4%。说明增加的是针对 Reset、Tag 生命周期及跨端口写合并的验证深度，而不是靠堆随机数去刷 Branch Coverage。
+
+## 40. 为什么还要独立检查 Memory Refill Data？Core Scoreboard 不够吗？
+
+Core Scoreboard 只对最后实际发生的 Core Read 做数据比较，如果坏的 Refill 数据没有被读取，或者后续写操作把错误覆盖掉，就可能漏报。我另外维护了物理 DRAM 的参考映像：只有真实 Memory Writeback 才更新它；Memory Read 接受时按 Tag 保存整条 512-bit 预期 Line，Memory Response 返回时比较。Run #95 正常回归比对了 891 条 Refill，零数据错误。
+
+## 41. 你怎么证明新增 Refill Checker 真能检出问题？
+
+我在 Memory Responder 加了只在负向测试启用的错误注入，把一次 Write Allocate Refill 的最低一 Bit 翻转。随后 Core 做全 Byte Enable 写入，坏字节被覆盖，最终 Core Readback 完全正确，但 Memory-side Scoreboard 报了 `SB_MEM_DATA` mismatch。CI 强制要求这个坏仿真失败、并且失败原因必须是指定 Checker，同时不能出现 Core Read mismatch。这证明它能抓到原先最终读回比较漏掉的情况。
