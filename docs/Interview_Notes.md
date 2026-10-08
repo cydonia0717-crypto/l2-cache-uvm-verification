@@ -6,7 +6,19 @@ I selected the open-source Vortex cache RTL as the DUT and independently built a
 
 The TB has two active core agents and a reactive memory agent. The memory side can delay requests and return tagged refill responses out of request order. The scoreboard keeps an architectural byte-addressed memory image, correlates core responses by port/tag and checks dirty writebacks byte by byte. I also added functional coverage and SVA, including white-box invariants for flush quiescence and MSHR release/coalesce lifetime hazards.
 
-The current CI regression has 27 unique functional/stress tests plus five extra random seeds. The normal regression has zero UVM errors/fatals, reaches eight outstanding misses in one bank and 32 across four banks. Scoped cache-RTL coverage is 94.6% line, 84.7% branch and 84.1% expression, with 52/52 reachable functional bins hit.
+The current CI regression has 29 unique functional/stress tests plus five extra random seeds. The normal regression has zero UVM errors/fatals, reaches eight outstanding misses in one bank and 32 across four banks. Scoped cache-RTL coverage is 94.6% line, 84.7% branch and 84.4% expression, with 55/55 reachable functional bins hit.
+
+## Additional closed risk areas
+
+- **Refill tag lifecycle:** the memory-side checker tracks accepted read requests
+  by memory tag, rejects an active tag being reused early, and rejects unknown
+  or duplicate refill responses. The MSHR-reuse test observed 8 legal reuses.
+- **Mid-flight reset recovery:** with four pending clean misses, reset aborts
+  four outstanding core requests and four refills. A fresh sequence reuses
+  core tags and completes four reads without stale-context errors.
+- **Cross-port write contention:** both core ports update opposite byte halves
+  of each same 64-bit word. The monitor saw 16 accepted pairs across four
+  banks and complete readback was correct.
 
 ## Two strong debug / verification stories
 
