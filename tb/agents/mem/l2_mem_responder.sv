@@ -7,6 +7,7 @@ class l2_mem_responder extends uvm_component;
   int unsigned cycle_count;
   bit rsp_busy;
   int unsigned read_accept_count;
+  bit injected_refill_corruption;
   l2_pending_rsp active_rsp;
 
   function new(string name, uvm_component parent); super.new(name,parent); endfunction
@@ -63,6 +64,13 @@ class l2_mem_responder extends uvm_component;
           p.addr = vif.rsp_cb.req_addr;
           p.tag  = vif.rsp_cb.req_tag;
           p.data = read_line(vif.rsp_cb.req_addr);
+          // Explicit negative control: corrupt only the first accepted refill.
+          // The independent scoreboard must detect this before any core read.
+          if ($test$plusargs("L2_INJECT_MEM_RSP_CORRUPT") &&
+              !injected_refill_corruption) begin
+            p.data[0]=~p.data[0];
+            injected_refill_corruption=1'b1;
+          end
           if (cfg.force_ooo) begin
             int unsigned skew = read_accept_count * 3;
             int unsigned lat = (cfg.max_read_latency > skew) ? (cfg.max_read_latency-skew) : cfg.min_read_latency;

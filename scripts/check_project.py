@@ -6,7 +6,7 @@ required=[
  "rtl/l2_cache_dut_wrapper.sv","tb/l2_uvm_pkg.sv","tb/tb_top.sv","tb/if/l2_reset_if.sv",
  "docs/Verification_Plan.md","docs/TB_Architecture.md","docs/Simulation_Environment.md",
  "scripts/run_vcs.sh","scripts/run_verilator.sh","scripts/bootstrap_oss.sh",
- "scripts/oss_regression.sh","scripts/regression_manifest.txt","Makefile",
+ "scripts/oss_regression.sh","scripts/check_mem_refill_checker.sh","scripts/regression_manifest.txt","Makefile",
  ".github/workflows/oss-smoke.yml"
 ]
 missing=[p for p in required if not (root/p).exists()]
@@ -29,7 +29,7 @@ for rel, needles in checks.items():
         if n not in txt:
             print(f"Invariant missing in {rel}: {n}"); sys.exit(1)
 
-# Regression manifest sanity: one canonical list must describe the measured 32-run suite.
+# Regression manifest sanity: one canonical list must describe the measured 34-run suite.
 manifest_lines=[
     ln.strip() for ln in (root/'scripts/regression_manifest.txt').read_text().splitlines()
     if ln.strip() and not ln.lstrip().startswith('#')

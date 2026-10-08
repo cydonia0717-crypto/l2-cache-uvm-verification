@@ -11,6 +11,11 @@ class l2_scoreboard extends uvm_component;
   longint unsigned writeback_addrs[$];
   // Track the memory-side transaction lifecycle independently of core data.
   // A tag must not be allocated again before its previous refill retires.
+  // Physical DRAM mirror. Unlike arch_mem (the latest core-visible state),
+  // this image changes only when an actual downstream writeback is accepted.
+  byte unsigned dram_mirror[longint unsigned];
+  bit [L2_LINE_BITS-1:0] expected_refill_data[bit [L2_MEM_TAG_W-1:0]];
+  int unsigned refill_payload_checks, refill_payload_errors;
   longint unsigned active_refill_addr[bit [L2_MEM_TAG_W-1:0]];
   bit refill_tag_ever_seen[bit [L2_MEM_TAG_W-1:0]];
   int unsigned refill_distinct_tags, refill_tag_reuse_count;
@@ -41,6 +46,7 @@ class l2_scoreboard extends uvm_component;
         exp_read.delete();
         exp_flush.delete();
         active_refill_addr.delete();
+        expected_refill_data.delete();
       end
       reset_prev=reset_vif.reset;
     end
@@ -49,6 +55,18 @@ class l2_scoreboard extends uvm_component;
   function byte unsigned get_byte(longint unsigned a);
     if (arch_mem.exists(a)) return arch_mem[a];
     return l2_default_byte(a);
+  endfunction
+
+  function byte unsigned get_dram_byte(longint unsigned a);
+    if (dram_mirror.exists(a)) return dram_mirror[a];
+    return l2_default_byte(a);
+  endfunction
+
+  function bit [L2_LINE_BITS-1:0] get_dram_line(longint unsigned a);
+    bit [L2_LINE_BITS-1:0] d;
+    for (int i=0;i<L2_LINE_BYTES;i++)
+      d[i*8 +: 8]=get_dram_byte(a+i);
+    return d;
   endfunction
 
   function bit [L2_DATA_W-1:0] get_word(longint unsigned a);
@@ -112,19 +130,40 @@ class l2_scoreboard extends uvm_component;
           refill_distinct_tags++;
         end
         active_refill_addr[o.tag]=o.addr;
+        // Snapshot when the downstream request is accepted, not when its
+        // possibly out-of-order response returns.
+        expected_refill_data[o.tag]=get_dram_line(o.addr);
       end
     end
     if (o.kind==MEM_RSP) begin
       if (!active_refill_addr.exists(o.tag)) begin
         errors++;
         `uvm_error("SB_TAG",$sformatf("unexpected or duplicate refill response tag=0x%0h",o.tag))
-      end else
+      end else begin
+        if (!expected_refill_data.exists(o.tag)) begin
+          errors++;
+          `uvm_error("SB_MEM_DATA",$sformatf(
+            "missing expected refill snapshot for tag=0x%0h",o.tag))
+        end else begin
+          refill_payload_checks++;
+          if (o.data !== expected_refill_data[o.tag]) begin
+            errors++;
+            refill_payload_errors++;
+            `uvm_error("SB_MEM_DATA",$sformatf(
+              "refill payload mismatch tag=0x%0h line=0x%0h exp=0x%0h act=0x%0h",
+              o.tag,active_refill_addr[o.tag],
+              expected_refill_data[o.tag],o.data))
+          end
+          expected_refill_data.delete(o.tag);
+        end
         active_refill_addr.delete(o.tag);
+      end
     end
     if (o.kind==MEM_REQ && o.rw) begin
       mem_writebacks++;
       writeback_addrs.push_back(o.addr);
       for (int i=0;i<L2_LINE_BYTES;i++) begin
+        if (o.byteen[i]) dram_mirror[o.addr+i]=o.data[i*8 +: 8];
         if (o.byteen[i] && o.data[i*8 +: 8] !== get_byte(o.addr+i)) begin
           errors++;
           `uvm_error("SB",$sformatf("writeback mismatch addr=0x%0h byte=%0d exp=%02x act=%02x",
@@ -142,13 +181,17 @@ class l2_scoreboard extends uvm_component;
     if (active_refill_addr.num()!=0)
       `uvm_error("SB_TAG",$sformatf(
         "%0d memory-side refills still outstanding at end of test",active_refill_addr.num()))
+    if (expected_refill_data.num()!=0)
+      `uvm_error("SB_MEM_DATA",$sformatf(
+        "%0d memory payload snapshots still outstanding",expected_refill_data.num()))
   endfunction
 
   function void report_phase(uvm_phase phase);
     `uvm_info("SB",$sformatf(
-      "data_checks=%0d errors=%0d refill_reqs=%0d writebacks=%0d flush_rsp=%0d distinct_mem_tags=%0d mem_tag_reuse=%0d reset_epochs=%0d reset_dropped_reads=%0d reset_dropped_refills=%0d",
+      "data_checks=%0d errors=%0d refill_reqs=%0d writebacks=%0d flush_rsp=%0d distinct_mem_tags=%0d mem_tag_reuse=%0d reset_epochs=%0d reset_dropped_reads=%0d reset_dropped_refills=%0d refill_payload_checks=%0d refill_payload_errors=%0d",
       checks,errors,mem_refill_reqs,mem_writebacks,flush_responses,
       refill_distinct_tags,refill_tag_reuse_count,
-      reset_epochs,reset_dropped_reads,reset_dropped_refills),UVM_LOW)
+      reset_epochs,reset_dropped_reads,reset_dropped_refills,
+      refill_payload_checks,refill_payload_errors),UVM_LOW)
   endfunction
 endclass

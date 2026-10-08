@@ -30,11 +30,17 @@ jobs:
       - name: Static project checks
         run: python3 scripts/check_project.py
 
-      - name: Normal 32-run regression + coverage
+      - name: Normal 34-run regression + coverage
         run: |
           source .env.oss
           VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
             bash scripts/oss_regression.sh
+
+      - name: Corrupted memory refill payload negative control
+        run: |
+          source .env.oss
+          VERILATOR_DOCKER=1 BUILD_OUT="$PWD/out/verilator/ci-build" \
+            bash scripts/check_mem_refill_checker.sh
 
       - name: Historical flush-race mutation
         run: |
@@ -58,6 +64,7 @@ jobs:
             out/verilator/coverage/merged.info
             out/verilator/coverage/summary.txt
             out/verilator/coverage/scope_summary.txt
+            out/qualification/corrupt-refill/**
             out/mutation/historical-flush-race/**
             out/mutation/historical-mshr-release-race/**
           if-no-files-found: warn
