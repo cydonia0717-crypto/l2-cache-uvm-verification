@@ -3,12 +3,10 @@
 
 .github/workflows/oss-smoke.yml
 .gitignore
-Makefile
-README.md
 docs/Address_Mapping_and_Tagging.md
 docs/Coverage_Plan.md
-docs/DUT_Architecture.md
 docs/Debug_Report.md
+docs/DUT_Architecture.md
 docs/File_Manifest.txt
 docs/Historical_Bug_Reproduction.md
 docs/Historical_MSHR_Bug_Reproduction.md
@@ -26,6 +24,8 @@ docs/TB_Architecture.md
 docs/Testcase_List.md
 docs/VCS_Verdi_Guide.md
 docs/Verification_Plan.md
+Makefile
+README.md
 rtl/l2_cache_dut_wrapper.sv
 scripts/bootstrap_oss.sh
 scripts/check_project.py
@@ -35,13 +35,13 @@ scripts/merge_coverage.sh
 scripts/open_verdi.sh
 scripts/oss_regression.sh
 scripts/random_multiseed.sh
-scripts/regression.py
 scripts/regression_manifest.txt
+scripts/regression.py
 scripts/repro_historical_flush_bug.sh
 scripts/repro_historical_mshr_release_bug.sh
-scripts/run.sh
 scripts/run_vcs.sh
 scripts/run_verilator.sh
+scripts/run.sh
 scripts/setup_vortex.sh
 scripts/vcs_regression.sh
 tb/agents/core/l2_core_agent.sv
@@ -60,6 +60,7 @@ tb/coverage/l2_coverage.sv
 tb/env/l2_env.sv
 tb/if/l2_core_if.sv
 tb/if/l2_mem_if.sv
+tb/if/l2_reset_if.sv
 tb/l2_uvm_pkg.sv
 tb/scoreboard/l2_scoreboard.sv
 tb/seq/l2_base_seq.sv
@@ -72,6 +73,7 @@ tb/tests/l2_base_test.sv
 tb/tests/l2_byteen_sweep_test.sv
 tb/tests/l2_clean_eviction_test.sv
 tb/tests/l2_core_rsp_backpressure_test.sv
+tb/tests/l2_cross_port_partial_test.sv
 tb/tests/l2_dirty_eviction_test.sv
 tb/tests/l2_flush_pipeline_race_test.sv
 tb/tests/l2_flush_test.sv
@@ -90,6 +92,7 @@ tb/tests/l2_random_test.sv
 tb/tests/l2_read_hit_test.sv
 tb/tests/l2_refill_writeback_overlap_test.sv
 tb/tests/l2_release_coalesce_race_test.sv
+tb/tests/l2_reset_recovery_test.sv
 tb/tests/l2_same_line_merge_test.sv
 tb/tests/l2_set_slice_sweep_test.sv
 tb/tests/l2_smoke_test.sv
