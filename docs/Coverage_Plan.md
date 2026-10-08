@@ -24,6 +24,16 @@ Measured reachable closure in run #91: **55 / 55 bins = 100%**.
 
 Two raw `mem_rsp_stall` bins are classified unreachable for the current standalone cache/memory-interface configuration: the external response-ready path remains asserted for the exercised response traffic because of the internal response queue. They are retained in the model as documentation but excluded from the reachable-bin denominator.
 
+## Independent memory response data oracle
+
+The scoreboard maintains a **physical DRAM mirror** distinct from the latest
+core-visible architectural memory model. It updates the DRAM mirror only on
+accepted memory-side writebacks, takes a 512-bit snapshot when each refill read
+request is accepted, and checks the full returned line using the corresponding
+memory tag. A one-bit corruption injected in the reactive memory model must
+produce `SB_MEM_DATA` and fail the qualification stage. This mutation is a
+deliberate checker negative control, not an upstream RTL defect.
+
 ## Assertions
 
 Boundary SVA checks request/response payload stability while stalled and memory-request line alignment.
