@@ -18,8 +18,11 @@ module tb_top;
   localparam int MEM_TAG_W  = `CACHE_MEM_TAG_WIDTH(8,4,1,VX_gpu_pkg::UUID_WIDTH);
 
   logic clk=0;
-  logic reset=1;
+  logic init_reset=1;
+  wire reset;
   always #5 clk=~clk;
+  l2_reset_if reset_ctrl_if(clk);
+  assign reset=init_reset | reset_ctrl_if.force_reset;
 
   l2_core_if #(.ADDR_W(ADDR_W),.DATA_W(DATA_W),.TAG_W(TAG_W)) core0_if(clk);
   l2_core_if #(.ADDR_W(ADDR_W),.DATA_W(DATA_W),.TAG_W(TAG_W)) core1_if(clk);
@@ -88,13 +91,16 @@ module tb_top;
 
   initial begin
     repeat(8) @(posedge clk);
-    reset <= 0;
+    init_reset <= 0;
   end
 
   initial begin
     uvm_config_db#(virtual l2_core_if)::set(null,"uvm_test_top","core0_vif",core0_if);
     uvm_config_db#(virtual l2_core_if)::set(null,"uvm_test_top","core1_vif",core1_if);
     uvm_config_db#(virtual l2_mem_if)::set(null,"uvm_test_top","mem_vif",mem_if);
+    uvm_config_db#(virtual l2_reset_if)::set(null,"uvm_test_top","reset_ctrl_vif",reset_ctrl_if);
+    uvm_config_db#(virtual l2_core_if)::set(null,"uvm_test_top.env.sb","reset_vif",core0_if);
+    uvm_config_db#(virtual l2_core_if)::set(null,"uvm_test_top.env.cov","reset_vif",core0_if);
     run_test();
   end
 endmodule
