@@ -49,7 +49,7 @@ source .env.oss
 TEST=l2_smoke_test SEED=1 bash scripts/run_verilator.sh
 ```
 
-GitHub Actions run #81 is the current measured baseline. It completes the functional/stress suite, additional random seeds, coverage merge and two historical-bug mutation checks.
+GitHub Actions PR qualification run #91 is the current 34-run measured baseline. It completes the functional/stress suite, additional random seeds, coverage merge and two historical-bug mutation checks.
 
 For a local one-command open-source run after bootstrap:
 
