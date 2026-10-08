@@ -16,9 +16,11 @@ Covered categories include:
 - in-order vs out-of-order refill completion;
 - memory-request backpressure;
 - core-response backpressure;
-- selected crosses such as port × operation.
+- selected crosses such as port × operation;
+- first-use and legal re-use of retired refill tags;
+- observed same-word writes from both core ports with nonoverlapping byte masks.
 
-Measured reachable closure in run #81: **52 / 52 bins = 100%**.
+Measured reachable closure in run #91: **55 / 55 bins = 100%**.
 
 Two raw `mem_rsp_stall` bins are classified unreachable for the current standalone cache/memory-interface configuration: the external response-ready path remains asserted for the exercised response traffic because of the internal response queue. They are retained in the model as documentation but excluded from the reachable-bin denominator.
 
@@ -31,18 +33,18 @@ Two white-box invariants target high-risk lifetime/control behavior:
 - flush cannot leave WAIT1 while `mshr_empty && !bank_empty`;
 - a new MSHR allocation cannot link behind an entry being finalized/released in the same cycle.
 
-Both invariants have been proven useful by killing historical Vortex bug mutations in run #81.
+Both invariants have been proven useful by killing historical Vortex bug mutations in run #91.
 
 ## Code coverage
 
-Merged Verilator coverage for the **Vortex cache RTL scope** in run #81:
+Merged Verilator coverage for the **Vortex cache RTL scope** in run #91:
 
 | Metric | Result |
 |---|---:|
 | Line | **94.6%** (87 / 92) |
 | Branch | **84.7%** (461 / 544) |
-| Expression | **84.1%** (1974 / 2348) |
-| Toggle | **61.0%** (23779 / 38962) |
+| Expression | **84.4%** (1982 / 2348) |
+| Toggle | **61.2%** (23851 / 38962) |
 
 Code coverage holes are reviewed by control relevance rather than closed by random stimulus solely to inflate a percentage. Generic Vortex library code and UVM infrastructure are reported separately and are not mixed into the DUT metric.
 
