@@ -5,46 +5,47 @@ All values below are taken from actual GitHub Actions logs; they are not estimat
 ## Current green regression
 
 - Workflow: `oss-smoke`
-- GitHub Actions run: **#81**
-- Commit: `03d0b8f6984e9e1a64a12873bf30d3d3ab07d281`
+- Verified PR qualification: **run #91**, commit `41fa0d7dcdc98e2b1f530a9b4aac67d11496f113`
 - Result: **PASS**
-- Simulator: Verilator/UVM open-source CI flow
-- DUT: pinned Vortex cache RTL
+- Simulator: Verilator/UVM open-source CI against pinned Vortex cache RTL
+- 29 unique functional/stress test classes + five additional random seeds
+- 34 normal simulations with **0 UVM_ERROR / 0 UVM_FATAL**
 
-The run executed 27 unique functional/stress test classes plus five additional random seeds. Across the resulting **32 unmutated simulations**:
-
-| Observation | Measured value |
+| Observation | Measured |
 |---|---:|
-| Core-read scoreboard checks | **1,234** |
+| Core-read scoreboard checks | **1,254** |
 | UVM scoreboard errors | **0** |
-| Refill requests | **871** |
+| Memory-side refill requests | **895** |
 | Dirty writebacks | **14** |
-| Completed whole-cache flushes | **2** |
-| Peak memory-side outstanding refills | **32** |
-| Core request stall cycles observed | **3,552** |
-| Core response stall cycles observed | **125** |
-| Memory request stall cycles observed | **210** |
+| Whole-cache flush completions | **2** |
+| Peak outstanding refills | **32** |
+| Core-request stall cycles | **3,552** |
+| Core-response stall cycles | **126** |
+| Memory-request stall cycles | **210** |
 
-The same-bank MSHR-full test reaches **8 outstanding refills** and stalls a ninth request. The four-bank pressure test reaches **32 aggregate outstanding refills**.
+The same-bank MSHR-full test reaches **8** outstanding refills and stalls a
+ninth; the global pressure test reaches **32**. The lifecycle case observes
+**8 legal retired memory-tag reuses**. The reset test aborts **4** outstanding
+core reads / **4** refills, then completes **4** new reads. The dual-port
+test observes **16 byte-disjoint same-word write pairs** across four banks,
+followed by clean readbacks.
 
 ## Merged coverage
-
-Coverage is reported for the cache RTL separately from generic Vortex infrastructure and UVM code.
 
 | Metric | Vortex cache RTL scope |
 |---|---:|
 | Line | **94.6%** (87 / 92) |
 | Branch | **84.7%** (461 / 544) |
-| Expression | **84.1%** (1974 / 2348) |
-| Toggle | **61.0%** (23779 / 38962) |
+| Expression | **84.4%** (1982 / 2348) |
+| Toggle | **61.2%** (23851 / 38962) |
 
-Reachable functional coverage is **100% (52 / 52 bins)**. Two raw memory-response-stall bins are classified unreachable in the current standalone configuration because the cache-side response queue keeps the external response-ready path asserted for the exercised patterns.
-
-Toggle coverage is intentionally not presented as an overall quality score; many untouched toggles are width/state-space activity rather than missing functional scenarios.
+Reachable functional coverage: **55 / 55 = 100%**. Two raw memory-response
+stall bins are classified unreachable for this standalone interface configuration.
+Code-coverage scopes exclude generic Vortex infrastructure and UVM code.
 
 ## Historical mutation evidence
 
-Run #81 also performs two negative-control checks against known upstream Vortex fixes.
+Run #91 also performs two negative-control checks against known upstream Vortex fixes.
 
 ### Flush/pipeline race — a686ceec
 
@@ -66,4 +67,4 @@ MSHR_RELEASE_COALESCE: allocation linked behind an entry released in the same cy
 
 Result: **mutation killed**.
 
-Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/36678971383
+Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
