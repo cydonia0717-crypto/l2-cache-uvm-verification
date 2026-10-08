@@ -72,7 +72,11 @@ fi
 
 cd "$OUT"
 echo "[run] TEST=$TEST SEED=$SEED"
-"$BUILD_OUT/obj_dir/simv" +UVM_TESTNAME="$TEST" +verilator+seed+"$SEED" 2>&1 | tee run.log
+extra_plusargs=()
+if [ "${INJECT_MEM_RSP_CORRUPT:-0}" = "1" ]; then
+  extra_plusargs+=(+L2_INJECT_MEM_RSP_CORRUPT)
+fi
+"$BUILD_OUT/obj_dir/simv" +UVM_TESTNAME="$TEST" +verilator+seed+"$SEED" "${extra_plusargs[@]}" 2>&1 | tee run.log
 
 # UVM normally terminates simulation with $finish even when the report server
 # recorded errors.  Make CI fail on a non-zero UVM error/fatal summary.
