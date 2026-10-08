@@ -13,7 +13,7 @@ help:
 	@echo "  make check          - static project consistency checks"
 	@echo "  make smoke          - run smoke on Verilator (or SIM=vcs)"
 	@echo "  make run TEST=...   - run one test"
-	@echo "  make regression     - run all 33 normal OSS simulations + coverage"
+	@echo "  make regression     - run all 34 normal OSS simulations + coverage"
 	@echo "  make qualification  - regression + both historical mutation checks"
 	@echo "  make coverage       - merge Verilator coverage databases"
 	@echo "  make vcs-smoke      - run smoke with VCS/UVM 1.2"

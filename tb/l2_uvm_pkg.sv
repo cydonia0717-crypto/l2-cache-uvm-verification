@@ -62,6 +62,7 @@ package l2_uvm_pkg;
   `include "tests/l2_multi_bank_test.sv"
   `include "tests/l2_mshr_reuse_test.sv"
   `include "tests/l2_reset_recovery_test.sv"
+  `include "tests/l2_cross_port_partial_test.sv"
   `include "tests/l2_line_offsets_test.sv"
   `include "tests/l2_global_mshr_pressure_test.sv"
   `include "tests/l2_writeback_backpressure_test.sv"

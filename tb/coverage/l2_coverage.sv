@@ -14,6 +14,10 @@ class l2_coverage extends uvm_component;
   bit [L2_NUM_PORTS-1:0] core_traffic_started;
   bit [L2_NUM_BANKS-1:0] seen_mem_banks;
   bit [L2_MEM_TAG_W-1:0] mem_read_order[$];
+  bit [L2_STRB_W-1:0] write_mask_p0[longint unsigned];
+  bit [L2_STRB_W-1:0] write_mask_p1[longint unsigned];
+  bit cross_port_write_counted[longint unsigned];
+  int unsigned cross_port_disjoint_write_words;
   bit refill_tag_seen[bit [L2_MEM_TAG_W-1:0]];
   virtual l2_core_if reset_vif;
   longint unsigned read_line_by_key[longint unsigned];
@@ -45,6 +49,13 @@ class l2_coverage extends uvm_component;
     cp_reordered_rsp: coverpoint reordered iff(kind==MEM_RSP) { bins in_order={0}; bins out_of_order={1}; }
   endgroup
 
+  covergroup cross_port_write_cg with function sample(bit observed);
+    option.per_instance=1;
+    cp_disjoint_write_pair: coverpoint observed {
+      bins both_ports_disjoint={1};
+    }
+  endgroup
+
   covergroup tag_lifecycle_cg with function sample(bit reused);
     option.per_instance=1;
     cp_tag_lifecycle: coverpoint reused {
@@ -69,6 +80,9 @@ class l2_coverage extends uvm_component;
         read_line_by_key.delete();
         line_pending.delete();
         core_traffic_started='0;
+        write_mask_p0.delete();
+        write_mask_p1.delete();
+        cross_port_write_counted.delete();
       end
       reset_prev=reset_vif.reset;
     end
@@ -76,7 +90,7 @@ class l2_coverage extends uvm_component;
 
   function new(string name, uvm_component parent);
     super.new(name,parent); core_imp=new("core_imp",this); mem_imp=new("mem_imp",this);
-    core_cg=new(); mem_cg=new(); tag_lifecycle_cg=new();
+    core_cg=new(); mem_cg=new(); tag_lifecycle_cg=new(); cross_port_write_cg=new();
     outstanding_refills=0; max_outstanding_refills=0; saw_ooo_refill=0; saw_same_line_pending=0;
     core_req_stall_count=0; core_rsp_stall_count=0; mem_req_stall_count=0; mem_rsp_stall_count=0;
     core_traffic_started='0; seen_mem_banks='0;
@@ -103,6 +117,19 @@ class l2_coverage extends uvm_component;
         if (line_pending[line]==0) line_pending.delete(line);
       end
       read_line_by_key.delete(k);
+    end
+    if (o.kind==CORE_REQ && o.rw && !o.flush) begin
+      if(o.port_id==0)
+        write_mask_p0[o.addr]=(write_mask_p0.exists(o.addr)?write_mask_p0[o.addr]:8'h00)|o.byteen;
+      else if(o.port_id==1)
+        write_mask_p1[o.addr]=(write_mask_p1.exists(o.addr)?write_mask_p1[o.addr]:8'h00)|o.byteen;
+      if(write_mask_p0.exists(o.addr) && write_mask_p1.exists(o.addr) &&
+         !cross_port_write_counted.exists(o.addr) &&
+         ((write_mask_p0[o.addr] & write_mask_p1[o.addr])==0)) begin
+        cross_port_write_counted[o.addr]=1;
+        cross_port_disjoint_write_words++;
+        cross_port_write_cg.sample(1'b1);
+      end
     end
     if (o.kind==CORE_REQ) core_traffic_started[o.port_id]=1'b1;
     if (o.kind==CORE_REQ_STALL && core_traffic_started[o.port_id]) core_req_stall_count++;

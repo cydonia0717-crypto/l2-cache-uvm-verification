@@ -27,6 +27,7 @@ The verification target is not merely hit/miss functionality. The main objective
 | F17 | Reset recovery | assert reset with four accepted misses still awaiting refill, then reuse core tags | aborted epoch purged; no stale response; fresh readbacks complete | reset abort/recover |
 | F18 | Random stress | constrained read/write traffic | scoreboard clean over long run | aggregate closure |
 | F19 | Memory refill-tag lifecycle | saturate and retire bank-local MSHRs, then reuse tags | no active-tag alias, no unknown/duplicate refill, no leaked outstanding transaction | first allocation vs post-retirement reuse |
+| F20 | Cross-port same-word byte writes | dual-port writes to same cache word with disjoint low/high byte masks under refill latency and backpressure | all 16 write pairs accepted, deterministic byte-wise merged data on readback across 4 banks | both ports touched same word with disjoint masks |
 
 ## Closure criteria
 
