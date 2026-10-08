@@ -2,17 +2,19 @@
 
 ## Current verified baseline
 
-- GitHub Actions workflow: `oss-smoke`, run **#91** (PR qualification)
-- Commit: `41fa0d7dcdc98e2b1f530a9b4aac67d11496f113`
+- GitHub Actions workflow: `oss-smoke`, run **#95** (PR qualification)
+- Commit: `cc7a6c60d70c3daaf11345d89e4b7dff8089afdf`
 - Result: **PASS**
 - 29 unique functional/stress tests + 5 extra random seeds
 - 34 unmutated simulations with **0 UVM_ERROR / 0 UVM_FATAL**
 - 1,254 core-read data checks
 - 895 refill requests
+- **891** complete 512-bit refill payload comparisons; **0** mismatches
+- 4 outstanding refill requests deliberately aborted by mid-flight reset
 - 14 dirty writebacks
 - peak **32** simultaneous memory-side refills
 
-Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
+Run: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37765145449
 
 ## Directed test evidence
 
@@ -60,6 +62,15 @@ Vortex cache RTL scoped merged coverage:
 - toggle: **61.2%**
 - reachable functional bins: **55/55 = 100%**
 
+## Refill-payload checker proof
+
+The qualification injects one corrupted bit in a write-allocate refill and
+requires the independent memory-side checker to raise `SB_MEM_DATA`.
+The core's full-byte-enable write overwrites the corrupted byte, and
+subsequent core readback succeeds. Therefore the injected corruption is
+**not detectable solely by final core data comparison**, demonstrating the
+independent value of the new 512-bit payload checker.
+
 ## Negative-control / mutation evidence
 
 The regression temporarily reintroduces two documented Vortex historical defects and requires the verification environment to reject them.
@@ -67,4 +78,4 @@ The regression temporarily reintroduces two documented Vortex historical defects
 - pre-a686ceec flush guard is killed by `a_wait_for_bank_quiescent`;
 - pre-35e85f6 MSHR matcher is killed by `a_no_coalesce_onto_releasing_entry`.
 
-Both mutation steps **PASS** in run #91, meaning the defective RTL compiled and the verification environment detected the intended control violation.
+Both mutation steps **PASS** in run #95, meaning the defective RTL compiled and the verification environment detected the intended control violation.
