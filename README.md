@@ -28,18 +28,17 @@ The testbench contains:
 
 ## Verified regression status
 
-GitHub Actions **run #81** completed successfully on the open-source Verilator/UVM flow.
-
-The green run executed **27 unique functional/stress test classes**, then five additional random seeds, and finally two historical-bug mutation checks. Across the 32 unmutated simulation runs:
+GitHub Actions PR qualification **run #91** (PASS; commit `41fa0d7dcdc98e2b1f530a9b4aac67d11496f113`) completed all **29 unique functional/stress test classes**
+plus five additional random seeds. Across the **34 unmutated simulation runs**:
 
 - **0 UVM_ERROR / 0 UVM_FATAL**
-- **1,234** core-read data checks
-- **871** observed refill requests
-- **14** dirty writebacks
-- **2** completed whole-cache flush operations
-- **8** simultaneous refills in the same-bank MSHR-full scenario
-- **32** simultaneous refills across all four banks in global pressure
-- request, response and memory-request backpressure were all observed
+- **1,254** core-read data checks
+- **895** observed refill requests
+- **14** dirty writebacks and **2** whole-cache flush completions
+- **8** simultaneous refills in one bank; **32** across all banks
+- **8** legal tag-reuse events in the dedicated MSHR reuse case, with no active-tag alias
+- A mid-flight reset aborted **4 core reads / 4 refills**, then **4** fresh core reads completed
+- **16** dual-port disjoint-byte write pairs merged correctly and read back across all **4** banks
 
 Measured merged coverage for the **Vortex cache RTL scope**:
 
@@ -47,23 +46,25 @@ Measured merged coverage for the **Vortex cache RTL scope**:
 |---|---:|
 | Line | **94.6%** (87 / 92) |
 | Branch | **84.7%** (461 / 544) |
-| Expression | **84.1%** (1974 / 2348) |
-| Toggle | **61.0%** (23779 / 38962) |
-| Reachable functional bins | **100%** (52 / 52) |
+| Expression | **84.4%** (1982 / 2348) |
+| Toggle | **61.2%** (23851 / 38962) |
+| Reachable functional bins | **100%** (55 / 55) |
 
-The raw functional model has two additional memory-response-stall bins that are classified unreachable for this standalone interface/configuration; they are not counted as reachable closure targets.
+Two raw external memory-response-stall bins remain excluded as unreachable in
+this standalone configuration. This is a Verilator/UVM qualification, not a
+claim of measured Synopsys VCS/URG coverage.
 
-Run evidence: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/36678971383
+Run evidence: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
 
 ## Historical bug mutation proof
 
 Two documented upstream Vortex fixes are used as mutation targets. The scripts temporarily restore the pre-fix RTL behavior, rebuild it, and require the verification environment to detect the defect.
 
 1. **Flush/pipeline race — Vortex a686ceec**  
-   A white-box SVA checks that the flush controller cannot leave `STATE_WAIT1` while the bank pipeline/request queue is still non-empty. Run #81 killed the mutant with `FLUSH_RACE`.
+   A white-box SVA checks that the flush controller cannot leave `STATE_WAIT1` while the bank pipeline/request queue is still non-empty. Run #91 killed the mutant with `FLUSH_RACE`.
 
 2. **MSHR release/coalesce race — Vortex 35e85f6**  
-   A white-box SVA checks that a new MSHR allocation never links behind an entry being released in the same cycle. Run #81 killed the mutant with `MSHR_RELEASE_COALESCE`.
+   A white-box SVA checks that a new MSHR allocation never links behind an entry being released in the same cycle. Run #91 killed the mutant with `MSHR_RELEASE_COALESCE`.
 
 These are mutation reproductions of known upstream defects, **not** claims of original bug discovery or RTL authorship.
 
@@ -101,11 +102,11 @@ Open-source reproducible flow:
 ```bash
 make setup
 make smoke
-make regression        # 32 normal simulations + coverage
+make regression        # 34 normal simulations + coverage
 make qualification     # normal suite + two historical mutation checks
 ```
 
-The canonical 32-run list is stored in `scripts/regression_manifest.txt` and is shared by the one-command open-source and VCS regression wrappers.
+The canonical 34-run list is stored in `scripts/regression_manifest.txt` and is shared by the one-command open-source and VCS regression wrappers.
 
 ## Authorship / provenance
 
