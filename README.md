@@ -22,6 +22,7 @@ The testbench contains:
 - two active core-side UVM agents;
 - a reactive memory agent/model with randomized request backpressure, read latency and out-of-order refill;
 - an architectural-memory scoreboard that correlates responses by port/tag and checks dirty writeback data byte by byte;
+- an **independent physical-DRAM shadow** that snapshots every 512-bit refill by memory tag and compares every completed memory response;
 - functional coverage for operation, ports, address/set/bank classes, outstanding depth, same-line concurrency, reorder and stall events;
 - boundary protocol SVA plus white-box invariants for cache-flush and MSHR lifetime hazards;
 - Verilator CI and a VCS/Verdi-oriented run script.
@@ -54,7 +55,23 @@ Two raw external memory-response-stall bins remain excluded as unreachable in
 this standalone configuration. This is a Verilator/UVM qualification, not a
 claim of measured Synopsys VCS/URG coverage.
 
-Run evidence: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37733111765
+Run evidence: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37765145449
+
+## Independent refill-data checker qualification
+
+Verified in **GitHub Actions PR run #95**: the existing **34 normal simulations**
+complete with **1,254 core data checks** and **891 full 64-byte refill payload
+comparisons**, all with zero data mismatches. Of 895 accepted MemRd requests,
+four were deliberately aborted by a mid-flight reset; the remaining 891 were
+checked on response.
+
+A deliberate single-bit corruption of the first write-allocate refill is
+caught by `SB_MEM_DATA`, while a subsequent Core readback is **correct**
+because the Core write fully overwrites the corrupted byte. The negative-control
+script requires that exact outcome. Both pre-existing historical cache-control
+RTL mutation gates also pass.
+
+Full qualification: https://github.com/cydonia0717-crypto/l2-cache-uvm-verification/actions/runs/37765145449
 
 ## Historical bug mutation proof
 
