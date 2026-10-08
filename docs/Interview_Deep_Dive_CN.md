@@ -72,7 +72,7 @@ Core Driver 的 response-ready 线程可以按概率拉低 rsp_ready。SVA 检�
 
 ## 18. 为什么有两个 mem_rsp_stall bin 被分类为 unreachable？
 
-在当前 standalone Cache 配置和内部 response queue 深度下，实际 closure 中外部 mem_rsp_ready 对构造的 traffic 始终能够接收 response。项目没有为了把数字做成 100% 而伪造场景，而是保留两个 raw bin 并标记当前配置不可达，reachable bins 统计为 52/52。
+在当前 standalone Cache 配置和内部 response queue 深度下，实际 closure 中外部 mem_rsp_ready 对构造的 traffic 始终能够接收 response。项目没有为了把数字做成 100% 而伪造场景，而是保留两个 raw bin 并标记当前配置不可达，reachable bins 统计为 55/55。
 
 ## 19. Flush 怎么验证？
 
@@ -96,11 +96,11 @@ Scoreboard 适合验证最终 architectural correctness，但一些控制 race �
 
 ## 24. Coverage 为什么不只看一个总百分比？
 
-Functional Coverage 回答 vPlan 场景有没有真正发生；Code Coverage 帮助找 RTL 未触达区域；Assertions 检查协议和控制 invariant。三者意义不同。项目单独报告 reachable functional 52/52，以及 Cache RTL scope 的 Line/Branch/Expression/Toggle，不把 UVM 和通用 library 混进去。
+Functional Coverage 回答 vPlan 场景有没有真正发生；Code Coverage 帮助找 RTL 未触达区域；Assertions 检查协议和控制 invariant。三者意义不同。项目单独报告 reachable functional 55/55，以及 Cache RTL scope 的 Line/Branch/Expression/Toggle，不把 UVM 和通用 library 混进去。
 
 ## 25. 当前 Coverage 结果是多少？
 
-Verilator/UVM 绿色基线中，reachable functional coverage 52/52；Cache RTL scope Line 94.6%、Branch 84.7%、Expression 84.1%、Toggle 61.0%。这些数字来自 GitHub Actions 实际回归。
+Verilator/UVM 绿色基线中，reachable functional coverage 55/55；Cache RTL scope Line 94.6%、Branch 84.7%、Expression 84.4%、Toggle 61.2%。这些数字来自 GitHub Actions 实际回归。
 
 ## 26. Toggle 只有 61%，会不会说明验证不足？
 
@@ -120,4 +120,4 @@ Vortex Cache RTL 不是我写的。我做的是 DUT 参数化和 wrapper、UVM C
 
 ## 30. 最值得讲的三条结果是什么？
 
-第一，单 Bank 8-entry MSHR Full 和 4 Bank 32 aggregate outstanding 都有实测；第二，正常 32 次仿真 0 UVM_ERROR/FATAL，reachable functional 52/52；第三，用 mutation + white-box SVA 成功 kill 两个 Vortex 已公开的历史 Cache 控制缺陷。
+第一，单 Bank 8-entry MSHR Full 和 4 Bank 32 aggregate outstanding 都有实测；第二，正常 34 次仿真 0 UVM_ERROR/FATAL，reachable functional 55/55；第三，用 mutation + white-box SVA 成功 kill 两个 Vortex 已公开的历史 Cache 控制缺陷。
